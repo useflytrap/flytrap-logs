@@ -4,6 +4,8 @@ import {
   catchUncaughtAction,
   catchUncaughtRoute,
   json,
+  parseJson,
+  parseText,
   redirect,
   response,
 } from "./request-utils"
@@ -134,6 +136,7 @@ export function createFlytrapLogger<T>({
       // @ts-expect-error: `addContext` is incompatible due to `T`
       return catchUncaughtAction(fn, addContext, flush, options)
     },
+    // Request utils
     catchUncaughtRoute<T extends { params: Record<string, unknown> }>(
       fn: (request: Request, context: T) => Promise<Response> | Response,
       options?: Partial<z.infer<typeof baseLogSchema>>
@@ -141,6 +144,15 @@ export function createFlytrapLogger<T>({
       // @ts-expect-error: `addContext` is incompatible due to `T`
       return catchUncaughtRoute(fn, addContext, flush, options)
     },
+    parseJson(request: Request) {
+      // @ts-expect-error: `addContext` is incompatible due to `T`
+      return parseJson(request, addContext)
+    },
+    parseText(request: Request) {
+      // @ts-expect-error: `addContext` is incompatible due to `T`
+      return parseText(request, addContext)
+    },
+    // Response utils
     response(body: BodyInit, opts: ResponseInit = {}) {
       // @ts-expect-error: `addContext` is incompatible due to `T`
       return response(body, opts, addContext)

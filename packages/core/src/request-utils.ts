@@ -40,6 +40,42 @@ export function redirect(
   return Response.redirect(url, status)
 }
 
+export async function parseJson(
+  request: Request,
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
+) {
+  try {
+    const requestBody = await request.json()
+    addContext({
+      req: requestBody,
+    })
+    return requestBody
+  } catch (error) {
+    addContext({
+      error: serializeError(error),
+    })
+    throw error
+  }
+}
+
+export async function parseText(
+  request: Request,
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
+) {
+  try {
+    const requestBody = await request.text()
+    addContext({
+      req: requestBody,
+    })
+    return requestBody
+  } catch (error) {
+    addContext({
+      error: serializeError(error),
+    })
+    throw error
+  }
+}
+
 export function catchUncaughtRoute<
   T extends { params: Record<string, unknown> },
 >(
