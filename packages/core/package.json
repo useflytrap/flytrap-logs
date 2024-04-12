@@ -1,6 +1,6 @@
 {
 	"name": "@useflytrap/logs",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"description": "Instant Stripe-level observability for your Next.js project",
 	"repository": "useflytrap/flytrap-logs",
 	"exports": {
