@@ -127,30 +127,30 @@ export function createFlytrapLogger<T>({
     getContext,
     addContext,
     flush,
-    catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
+    catchUncaughtAction<T extends (...args: unknown[]) => Promise<unknown>>(
       fn: T,
       options?: Partial<z.infer<typeof baseLogSchema>>
     ) {
-      // @ts-expect-error
+      // @ts-expect-error: `addContext` is incompatible due to `T`
       return catchUncaughtAction(fn, addContext, flush, options)
     },
     catchUncaughtRoute<T extends { params: Record<string, unknown> }>(
       fn: (request: Request, context: T) => Promise<Response> | Response,
       options?: Partial<z.infer<typeof baseLogSchema>>
     ) {
-      // @ts-expect-error
+      // @ts-expect-error: `addContext` is incompatible due to `T`
       return catchUncaughtRoute(fn, addContext, flush, options)
     },
     response(body: BodyInit, opts: ResponseInit = {}) {
-      // @ts-expect-error
+      // @ts-expect-error: `addContext` is incompatible due to `T`
       return response(body, opts, addContext)
     },
-    json(data: any, opts: ResponseInit = {}) {
-      // @ts-expect-error
+    json(data: unknown, opts: ResponseInit = {}) {
+      // @ts-expect-error: `addContext` is incompatible due to `T`
       return json(data, opts, addContext)
     },
     redirect(url: string | URL, status?: number) {
-      // @ts-expect-error
+      // @ts-expect-error: `addContext` is incompatible due to `T`
       return redirect(url, status, addContext)
     },
   }

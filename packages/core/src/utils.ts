@@ -15,7 +15,7 @@ export function headersToRecord(headers: Headers) {
   return headersRecord
 }
 
-export function buildJsonLog<T extends {}>(logs: Array<Partial<T>>) {
+export function buildJsonLog<T extends object>(logs: Array<Partial<T>>) {
   const logsObj: Record<string, unknown> = {}
   for (let i = 0; i < logs.length; i++) {
     Object.entries(logs[i]).forEach(([key, value]) => {

@@ -18,7 +18,7 @@ export function response(
 }
 
 export function json(
-  data: any,
+  data: unknown,
   opts: ResponseInit = {},
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>
 ) {
@@ -89,7 +89,9 @@ export function catchUncaughtRoute<
   }
 }
 
-export function catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
+export function catchUncaughtAction<
+  T extends (...args: unknown[]) => Promise<unknown>,
+>(
   fn: T,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
   flush: FlushFn,
