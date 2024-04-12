@@ -1,6 +1,6 @@
 {
 	"name": "@useflytrap/logs",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Instant Stripe-level observability for your Next.js project",
 	"repository": "useflytrap/flytrap-logs",
 	"exports": {
@@ -46,6 +46,7 @@
 		"eslint-config-prettier": "^8.10.0",
 		"eslint-plugin-prettier": "^5.1.3",
 		"globals": "^15.0.0",
+		"np": "^10.0.3",
 		"typescript": "^5.3.3",
 		"typescript-eslint": "^7.6.0",
 		"unbuild": "^2.0.0",
