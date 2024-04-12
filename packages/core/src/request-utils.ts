@@ -1,4 +1,3 @@
-import { createFlytrapLogger } from "./index"
 import { serializeError } from "serialize-error"
 import { baseLogSchema } from "./schemas"
 import { z } from "zod"
@@ -8,7 +7,7 @@ import { AddContextFn, FlushFn } from "./types"
 export function response(
   body: BodyInit,
   opts: ResponseInit = {},
-  addContext: ReturnType<typeof createFlytrapLogger>["addContext"]
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
 ) {
   addContext({
     res: parseJsonOrPassthrough(body),
@@ -18,15 +17,40 @@ export function response(
   return new Response(body, opts)
 }
 
+export function json(
+  data: any,
+  opts: ResponseInit = {},
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
+) {
+  addContext({
+    res: data,
+    http_status: opts.status ?? 200,
+  })
+  return Response.json(data, opts)
+}
+
+export function redirect(
+  url: string | URL,
+  status: number = 302,
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
+) {
+  addContext({
+    http_status: status,
+  })
+  return Response.redirect(url, status)
+}
+
 export function catchUncaughtRoute<
-  T extends { params: Record<string, unknown> }
+  T extends { params: Record<string, unknown> },
 >(
   fn: (request: Request, context: T) => Promise<Response> | Response,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
-  flush: FlushFn
+  flush: FlushFn,
+  options?: Partial<z.infer<typeof baseLogSchema>>
 ): (request: Request, context: T) => Promise<Response> {
   return async (request: Request, context: T) => {
     const t0 = Date.now()
+    if (options) addContext(options)
     try {
       addContext({
         req_headers: headersToRecord(request.headers),

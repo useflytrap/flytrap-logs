@@ -1,6 +1,12 @@
 import { z } from "zod"
 import { baseLogSchema } from "./schemas"
-import { catchUncaughtAction, catchUncaughtRoute } from "./request-utils"
+import {
+  catchUncaughtAction,
+  catchUncaughtRoute,
+  json,
+  redirect,
+  response,
+} from "./request-utils"
 import { buildJsonLog, buildTextLog } from "./utils"
 
 export type FlytrapLogsOptions = {
@@ -71,7 +77,7 @@ export function createFlytrapLogger<T>({
     method: "GET",
   } satisfies z.infer<typeof baseLogSchema>
 
-  let logs: Array<Partial<Log>> = [defaultLog as Log]
+  const logs: Array<Partial<Log>> = [defaultLog as Log]
 
   // Function defintions
   function getContext() {
@@ -125,12 +131,27 @@ export function createFlytrapLogger<T>({
       fn: T,
       options?: Partial<z.infer<typeof baseLogSchema>>
     ) {
+      // @ts-expect-error
       return catchUncaughtAction(fn, addContext, flush, options)
     },
     catchUncaughtRoute<T extends { params: Record<string, unknown> }>(
-      fn: (request: Request, context: T) => Promise<Response> | Response
+      fn: (request: Request, context: T) => Promise<Response> | Response,
+      options?: Partial<z.infer<typeof baseLogSchema>>
     ) {
-      return catchUncaughtRoute(fn, addContext, flush)
+      // @ts-expect-error
+      return catchUncaughtRoute(fn, addContext, flush, options)
+    },
+    response(body: BodyInit, opts: ResponseInit = {}) {
+      // @ts-expect-error
+      return response(body, opts, addContext)
+    },
+    json(data: any, opts: ResponseInit = {}) {
+      // @ts-expect-error
+      return json(data, opts, addContext)
+    },
+    redirect(url: string | URL, status?: number) {
+      // @ts-expect-error
+      return redirect(url, status, addContext)
     },
   }
 }
