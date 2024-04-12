@@ -1,0 +1,21 @@
+{
+	"name": "root",
+	"version": "0.0.1",
+	"description": "Instant Stripe-level observability for your Next.js project",
+	"repository": "useflytrap/flytrap-logs",
+	"author": "Rasmus Gustafsson <rasmus@useflytrap.com>",
+	"license": "MIT",
+	"scripts": {
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"test": "turbo test",
+		"lint": "turbo lint",
+		"release": "turbo release",
+		"format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
+		"format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache"
+	},
+	"devDependencies": {
+		"prettier": "^2.8.8",
+		"turbo": "^1.12.4"
+	}
+}
