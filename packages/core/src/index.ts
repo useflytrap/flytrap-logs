@@ -10,6 +10,7 @@ import {
   response,
 } from "./request-utils"
 import { buildJsonLog, buildTextLog } from "./utils"
+import { AddContextFn } from "./types"
 
 export type FlytrapLogsOptions = {
   /**
@@ -129,41 +130,66 @@ export function createFlytrapLogger<T>({
     getContext,
     addContext,
     flush,
-    catchUncaughtAction<T extends (...args: unknown[]) => Promise<unknown>>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
       fn: T,
       options?: Partial<z.infer<typeof baseLogSchema>>
     ) {
-      // @ts-expect-error: `addContext` is incompatible due to `T`
-      return catchUncaughtAction(fn, addContext, flush, options)
+      return catchUncaughtAction(
+        fn,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>,
+        flush,
+        options
+      )
     },
     // Request utils
-    catchUncaughtRoute<T extends { params: Record<string, unknown> }>(
-      fn: (request: Request, context: T) => Promise<Response> | Response,
+    catchUncaughtRoute<
+      RequestType extends Request,
+      T extends { params: Record<string, unknown> },
+    >(
+      fn: (request: RequestType, context: T) => Promise<Response> | Response,
       options?: Partial<z.infer<typeof baseLogSchema>>
     ) {
-      // @ts-expect-error: `addContext` is incompatible due to `T`
-      return catchUncaughtRoute(fn, addContext, flush, options)
+      return catchUncaughtRoute(
+        fn,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>,
+        flush,
+        options
+      )
     },
     parseJson(request: Request) {
-      // @ts-expect-error: `addContext` is incompatible due to `T`
-      return parseJson(request, addContext)
+      return parseJson(
+        request,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
     },
     parseText(request: Request) {
-      // @ts-expect-error: `addContext` is incompatible due to `T`
-      return parseText(request, addContext)
+      return parseText(
+        request,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
     },
     // Response utils
     response(body: BodyInit, opts: ResponseInit = {}) {
-      // @ts-expect-error: `addContext` is incompatible due to `T`
-      return response(body, opts, addContext)
+      return response(
+        body,
+        opts,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
     },
     json(data: unknown, opts: ResponseInit = {}) {
-      // @ts-expect-error: `addContext` is incompatible due to `T`
-      return json(data, opts, addContext)
+      return json(
+        data,
+        opts,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
     },
     redirect(url: string | URL, status?: number) {
-      // @ts-expect-error: `addContext` is incompatible due to `T`
-      return redirect(url, status, addContext)
+      return redirect(
+        url,
+        status,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
     },
   }
 }

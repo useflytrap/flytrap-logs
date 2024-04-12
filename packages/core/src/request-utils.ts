@@ -77,9 +77,10 @@ export async function parseText(
 }
 
 export function catchUncaughtRoute<
+  RequestType extends Request,
   T extends { params: Record<string, unknown> },
 >(
-  fn: (request: Request, context: T) => Promise<Response> | Response,
+  fn: (request: RequestType, context: T) => Promise<Response> | Response,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
   flush: FlushFn,
   options?: Partial<z.infer<typeof baseLogSchema>>
@@ -125,9 +126,8 @@ export function catchUncaughtRoute<
   }
 }
 
-export function catchUncaughtAction<
-  T extends (...args: unknown[]) => Promise<unknown>,
->(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
   flush: FlushFn,
