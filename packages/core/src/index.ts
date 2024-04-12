@@ -1,22 +1,7 @@
 import { z } from "zod"
 import { baseLogSchema } from "./schemas"
-
-function buildJson<T extends {}>(logs: Array<Partial<T>>) {
-  const logsObj: Record<string, unknown> = {}
-  for (let i = 0; i < logs.length; i++) {
-    Object.entries(logs[i]).forEach(([key, value]) => {
-      logsObj[key] = value
-    })
-  }
-  return logsObj as T
-}
-
-function buildText<T>(logs: Array<Partial<T>>) {
-  const jsonLine = buildJson(logs)
-  return Object.entries(jsonLine)
-    .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
-    .join(" ")
-}
+import { catchUncaughtAction, catchUncaughtRoute } from "./request-utils"
+import { buildJsonLog, buildTextLog } from "./utils"
 
 export type FlytrapLogsOptions = {
   /**
@@ -88,46 +73,64 @@ export function createFlytrapLogger<T>({
 
   let logs: Array<Partial<Log>> = [defaultLog as Log]
 
-  return {
-    getContext() {
-      return logs
-    },
-    addContext(context: Partial<Log>) {
-      logs.push(context)
-    },
-    flush(level: FlushLevel = "log") {
-      try {
-        const logValue =
-          logFormat === "text" ? buildText(logs) : buildJson(logs)
+  // Function defintions
+  function getContext() {
+    return logs
+  }
 
-        if (flushMethod === "stdout") {
-          console[level](
-            typeof logValue === "string" ? logValue : JSON.stringify(logValue)
-          )
-        }
-        if (flushMethod === "api") {
-          fetch(logsEndpoint, {
-            method: "POST",
-            body: JSON.stringify(logValue),
-            headers: new Headers({
-              "Content-Type": "application/json",
-              ...(flytrapPublicKey && {
-                Authorization: `Bearer ${flytrapPublicKey}`,
-              }),
-            }),
-          }).then(async (res) => {
-            if (res.ok === false) {
-              console.error(
-                "Flytrap Logs SDK: Failed to save logs to API. Error:"
-              )
-              console.error(await res.text())
-            }
-          })
-        }
-      } catch (error) {
-        console.error("Flytrap Logs SDK: Error when flushing logs. Error:")
-        console.error(error)
+  function addContext(context: Partial<Log>) {
+    logs.push(context)
+  }
+
+  function flush(level: FlushLevel = "log") {
+    try {
+      const logValue =
+        logFormat === "text" ? buildTextLog(logs) : buildJsonLog(logs)
+
+      if (flushMethod === "stdout") {
+        console[level](
+          typeof logValue === "string" ? logValue : JSON.stringify(logValue)
+        )
       }
+      if (flushMethod === "api") {
+        fetch(logsEndpoint, {
+          method: "POST",
+          body: JSON.stringify(logValue),
+          headers: new Headers({
+            "Content-Type": "application/json",
+            ...(flytrapPublicKey && {
+              Authorization: `Bearer ${flytrapPublicKey}`,
+            }),
+          }),
+        }).then(async (res) => {
+          if (res.ok === false) {
+            console.error(
+              "Flytrap Logs SDK: Failed to save logs to API. Error:"
+            )
+            console.error(await res.text())
+          }
+        })
+      }
+    } catch (error) {
+      console.error("Flytrap Logs SDK: Error when flushing logs. Error:")
+      console.error(error)
+    }
+  }
+
+  return {
+    getContext,
+    addContext,
+    flush,
+    catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
+      fn: T,
+      options?: Partial<z.infer<typeof baseLogSchema>>
+    ) {
+      return catchUncaughtAction(fn, addContext, flush, options)
+    },
+    catchUncaughtRoute<T extends { params: Record<string, unknown> }>(
+      fn: (request: Request, context: T) => Promise<Response> | Response
+    ) {
+      return catchUncaughtRoute(fn, addContext, flush)
     },
   }
 }
