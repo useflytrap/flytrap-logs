@@ -1,6 +1,6 @@
 {
 	"name": "@useflytrap/logs",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "Instant Stripe-level observability for your Next.js project",
 	"repository": "useflytrap/flytrap-logs",
 	"engines": {
@@ -42,8 +42,8 @@
 		"zod": "^3.22.4"
 	},
 	"peerDependencies": {
-    "next": ">=13"
-  },
+		"next": ">=13"
+	},
 	"devDependencies": {
 		"@eslint/js": "^9.0.0",
 		"@types/node": "^18.16.0",
