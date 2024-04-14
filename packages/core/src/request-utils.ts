@@ -3,6 +3,7 @@ import { baseLogSchema } from "./schemas"
 import { z } from "zod"
 import { headersToRecord, parseJsonOrPassthrough } from "./utils"
 import { AddContextFn, FlushFn } from "./types"
+import { headers } from "next/headers"
 
 export function response(
   body: BodyInit,
@@ -78,14 +79,14 @@ export async function parseText(
 
 export function catchUncaughtRoute<
   RequestType extends Request,
-  T extends { params: Record<string, unknown> }
+  T extends { params: Record<string, unknown> },
 >(
   fn: (request: RequestType, context: T) => Promise<Response> | Response,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
   flush: FlushFn,
   options?: Partial<z.infer<typeof baseLogSchema>>
-): (request: Request, context: T) => Promise<Response> {
-  return async (request: Request, context: T) => {
+): (request: RequestType, context: T) => Promise<Response> {
+  return async (request: RequestType, context: T) => {
     const t0 = Date.now()
     if (options) addContext(options)
     try {
@@ -137,6 +138,9 @@ export function catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
     const t0 = Date.now()
     if (options) addContext(options)
     try {
+      addContext({
+        req_headers: headersToRecord(headers()),
+      })
       addContext({
         req: args,
       })

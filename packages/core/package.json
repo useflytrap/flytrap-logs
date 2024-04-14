@@ -4,8 +4,8 @@
 	"description": "Instant Stripe-level observability for your Next.js project",
 	"repository": "useflytrap/flytrap-logs",
 	"engines": {
-    "node": ">=18"
-  },
+		"node": ">=18"
+	},
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
@@ -38,6 +38,7 @@
 		"release": "np"
 	},
 	"dependencies": {
+		"next": "^14.2.1",
 		"serialize-error": "^11.0.3",
 		"zod": "^3.22.4"
 	},

@@ -145,7 +145,7 @@ export function createFlytrapLogger<T>({
     // Request utils
     catchUncaughtRoute<
       RequestType extends Request,
-      T extends { params: Record<string, unknown> }
+      T extends { params: Record<string, unknown> },
     >(
       fn: (request: RequestType, context: T) => Promise<Response> | Response,
       options?: Partial<z.infer<typeof baseLogSchema>>
