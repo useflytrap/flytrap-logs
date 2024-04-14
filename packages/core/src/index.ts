@@ -111,6 +111,7 @@ export function createFlytrapLogger<T>({
               Authorization: `Bearer ${flytrapPublicKey}`,
             }),
           }),
+          keepalive: true,
         }).then(async (res) => {
           if (res.ok === false) {
             console.error(
