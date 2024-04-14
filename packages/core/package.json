@@ -3,6 +3,9 @@
 	"version": "0.0.3",
 	"description": "Instant Stripe-level observability for your Next.js project",
 	"repository": "useflytrap/flytrap-logs",
+	"engines": {
+    "node": ">=18"
+  },
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
