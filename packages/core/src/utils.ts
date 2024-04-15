@@ -31,3 +31,26 @@ export function buildTextLog<T>(logs: Array<Partial<T>>) {
     .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
     .join(" ")
 }
+
+export function sendLogToApi<T>(
+  log: T,
+  logsEndpoint: string,
+  flytrapPublicKey?: string
+) {
+  return fetch(logsEndpoint, {
+    method: "POST",
+    body: JSON.stringify(log),
+    headers: new Headers({
+      "Content-Type": "application/json",
+      ...(flytrapPublicKey && {
+        Authorization: `Bearer ${flytrapPublicKey}`,
+      }),
+    }),
+    keepalive: true,
+  }).then(async (res) => {
+    if (res.ok === false) {
+      console.error("Flytrap Logs SDK: Failed to save logs to API. Error:")
+      console.error(await res.text())
+    }
+  })
+}

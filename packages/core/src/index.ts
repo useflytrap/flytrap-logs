@@ -9,7 +9,7 @@ import {
   redirect,
   response,
 } from "./request-utils"
-import { buildJsonLog, buildTextLog } from "./utils"
+import { buildJsonLog, buildTextLog, sendLogToApi } from "./utils"
 import { AddContextFn } from "./types"
 
 export type FlytrapLogsOptions = {
@@ -54,6 +54,17 @@ export type FlytrapLogsOptions = {
    * The Flytrap public key used to authenticate your requests.
    */
   flytrapPublicKey?: string
+
+  /**
+   * Options regarding the [Vercel Integration](https://github.com) @TODO
+   */
+  vercel?: {
+    enabled?: boolean
+    /**
+     * @default true
+     */
+    sendLargeLogsToApi?: boolean
+  }
 }
 
 export type FlushLevel = "error" | "warn" | "log"
@@ -63,6 +74,7 @@ export function createFlytrapLogger<T>({
   flushMethod = "api",
   logsEndpoint = "https://flytrap-production.up.railway.app/api/v1/logs/raw",
   flytrapPublicKey,
+  vercel,
 }: FlytrapLogsOptions = {}) {
   const logFormat: FlytrapLogsOptions["format"] =
     flushMethod === "api" ? "json" : format
@@ -93,6 +105,22 @@ export function createFlytrapLogger<T>({
 
   function flush(level: FlushLevel = "log") {
     try {
+      if (vercel?.enabled) {
+        const logValue = buildJsonLog(logs)
+
+        if (JSON.stringify(logValue).length > 4_000) {
+          // Send large captures to API
+          sendLogToApi(logValue, logsEndpoint, flytrapPublicKey)
+        } else {
+          // Smaller captures printed to `stdout` are forwarded via the Vercel
+          // integration to our server.
+          console[level](
+            typeof logValue === "string" ? logValue : JSON.stringify(logValue)
+          )
+        }
+        return
+      }
+
       const logValue =
         logFormat === "text" ? buildTextLog(logs) : buildJsonLog(logs)
 
@@ -102,24 +130,8 @@ export function createFlytrapLogger<T>({
         )
       }
       if (flushMethod === "api") {
-        fetch(logsEndpoint, {
-          method: "POST",
-          body: JSON.stringify(logValue),
-          headers: new Headers({
-            "Content-Type": "application/json",
-            ...(flytrapPublicKey && {
-              Authorization: `Bearer ${flytrapPublicKey}`,
-            }),
-          }),
-          keepalive: true,
-        }).then(async (res) => {
-          if (res.ok === false) {
-            console.error(
-              "Flytrap Logs SDK: Failed to save logs to API. Error:"
-            )
-            console.error(await res.text())
-          }
-        })
+        // Send large captures to API
+        sendLogToApi(logValue, logsEndpoint, flytrapPublicKey)
       }
     } catch (error) {
       console.error("Flytrap Logs SDK: Error when flushing logs. Error:")
