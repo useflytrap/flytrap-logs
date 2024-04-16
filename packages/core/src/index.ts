@@ -108,7 +108,10 @@ export function createFlytrapLogger<T>({
       if (vercel?.enabled) {
         const logValue = buildJsonLog(logs)
 
-        if (JSON.stringify(logValue).length > 4_000) {
+        if (
+          JSON.stringify(logValue).length > 4_000 &&
+          vercel.sendLargeLogsToApi !== false
+        ) {
           // Send large captures to API
           sendLogToApi(logValue, logsEndpoint, flytrapPublicKey)
         } else {

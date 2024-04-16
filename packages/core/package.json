@@ -28,7 +28,7 @@
 		"canonical logging"
 	],
 	"scripts": {
-		"build": "unbuild",
+		"build": "rollup -c",
 		"test": "pnpm test:core && pnpm test:types",
 		"test:core": "vitest run",
 		"test:types": "tsc --noEmit",
@@ -46,6 +46,8 @@
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.0.0",
+		"@rollup/plugin-commonjs": "^25.0.7",
+		"@rollup/plugin-node-resolve": "^15.2.3",
 		"@types/node": "^18.16.0",
 		"@typescript-eslint/eslint-plugin": "^7.0.2",
 		"eslint": "^8.57.0",
@@ -53,9 +55,11 @@
 		"eslint-plugin-prettier": "^5.1.3",
 		"globals": "^15.0.0",
 		"np": "^10.0.3",
+		"rollup": "^4.14.3",
+		"rollup-plugin-dts": "^6.1.0",
+		"rollup-plugin-esbuild": "^6.1.1",
 		"typescript": "^5.3.3",
 		"typescript-eslint": "^7.6.0",
-		"unbuild": "^2.0.0",
 		"vite": "^5.1.4",
 		"vitest": "^1.3.1"
 	}
