@@ -56,8 +56,12 @@ export function sendLogToApi<T>(
   })
 }
 
-export function isEncryptedLogKeyValue(input: unknown): input is EncryptedLogKeyValue {
-  return typeof input === "object"
-    && (input as EncryptedLogKeyValue).type === "encrypted"
-    && typeof (input as EncryptedLogKeyValue).data === "string"
+export function isEncryptedLogKeyValue(
+  input: unknown
+): input is EncryptedLogKeyValue {
+  return (
+    typeof input === "object" &&
+    (input as EncryptedLogKeyValue).type === "encrypted" &&
+    typeof (input as EncryptedLogKeyValue).data === "string"
+  )
 }

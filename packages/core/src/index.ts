@@ -55,10 +55,10 @@ export type FlytrapLogsOptions<T extends object> = {
 
   /**
    * This is the public key sent with `fetch` log ingestion requests as the `Authorization: Bearer <publicKey>` header.
-   * 
+   *
    * The public key should be a base64 encoded public key with the prefix `pk_`.
    * Refer to [encryption.ts](./encryption.ts) for implementation details.
-   * 
+   *
    * For [Flytrap Logs](https://www.useflytrap.com) users, this is the public key that gets created for you when you make your project.
    */
   publicKey?: string
@@ -72,14 +72,14 @@ export type FlytrapLogsOptions<T extends object> = {
      * @default true
      */
     sendLargeLogsToApi?: boolean
-  },
+  }
 
   encryption?: {
     /**
      * Enable encryption for your log data. By default, only keys @TODO are encrypted. You can define which keys get encrypted
      * by using the `encryptKeys` option.
      */
-    enabled?: boolean;
+    enabled?: boolean
     /**
      * Define which keys of the log object should be encrypted with the public key.
      */
@@ -87,21 +87,41 @@ export type FlytrapLogsOptions<T extends object> = {
   }
 }
 
-export const defaultEncryptedKeys = ["req", "req_headers", "res", "res_headers", "error"] satisfies (keyof Log<{}>)[]
-export const requiredKeys = ["method", "type", "path", "http_status", "duration"] as const
+export const defaultEncryptedKeys = [
+  "req",
+  "req_headers",
+  "res",
+  "res_headers",
+  "error",
+] satisfies (keyof Log<{}>)[]
+export const requiredKeys = [
+  "method",
+  "type",
+  "path",
+  "http_status",
+  "duration",
+] as const
 
-export function validateConfig<T extends object>({ encryption, publicKey }: FlytrapLogsOptions<T>) {
+export function validateConfig<T extends object>({
+  encryption,
+  publicKey,
+}: FlytrapLogsOptions<T>) {
   if (encryption?.enabled && encryption.encryptKeys !== undefined) {
-    type RequiredKey = typeof requiredKeys[number];
-    const matchingRequiredKeys = encryption.encryptKeys.filter((keyToEncrypt): keyToEncrypt is RequiredKey => requiredKeys.includes(keyToEncrypt as RequiredKey))
+    type RequiredKey = (typeof requiredKeys)[number]
+    const matchingRequiredKeys = encryption.encryptKeys.filter(
+      (keyToEncrypt): keyToEncrypt is RequiredKey =>
+        requiredKeys.includes(keyToEncrypt as RequiredKey)
+    )
 
     if (matchingRequiredKeys.length > 0) {
       throw createError({
         events: ["config_invalid"],
         explanations: ["encrypting_required_keys"],
         params: {
-          keys: matchingRequiredKeys.map((key) => `\`${String(key)}\``).join(', '),
-        }
+          keys: matchingRequiredKeys
+            .map((key) => `\`${String(key)}\``)
+            .join(", "),
+        },
       }).toString()
     }
   }
@@ -110,7 +130,7 @@ export function validateConfig<T extends object>({ encryption, publicKey }: Flyt
     throw createError({
       events: ["config_invalid"],
       explanations: ["encryption_enabled_without_pubkey"],
-      solutions: ["add_pubkey", "read_config_docs"]
+      solutions: ["add_pubkey", "read_config_docs"],
     }).toString()
   }
 }
@@ -125,9 +145,16 @@ export function createFlytrapLogger<T extends object>({
 }: FlytrapLogsOptions<T> = {}) {
   const logFormat: FlytrapLogsOptions<T>["format"] =
     flushMethod === "api" ? "json" : format
-  
+
   // Config validation
-  validateConfig({ format, flushMethod, logsEndpoint, publicKey, vercel, encryption });
+  validateConfig({
+    format,
+    flushMethod,
+    logsEndpoint,
+    publicKey,
+    vercel,
+    encryption,
+  })
   // @todo: more validation that the config is correct,
   // eg. with format etc
   // if vercel?.enabled -> need also publicKey
@@ -158,19 +185,26 @@ export function createFlytrapLogger<T extends object>({
   async function flushAsync(level: FlushLevel = "log") {
     try {
       if (encryption?.enabled) {
-        invariant(publicKey, createError({
-          events: ["config_invalid"],
-          explanations: ["encryption_enabled_without_pubkey"],
-          solutions: ["add_pubkey", "read_config_docs"]
-        }).toString())
+        invariant(
+          publicKey,
+          createError({
+            events: ["config_invalid"],
+            explanations: ["encryption_enabled_without_pubkey"],
+            solutions: ["add_pubkey", "read_config_docs"],
+          }).toString()
+        )
       }
 
-      const combinedLogObject = buildJsonLog(logs);
-      let logValue = combinedLogObject;
+      const combinedLogObject = buildJsonLog(logs)
+      let logValue = combinedLogObject
 
       // Encryption
       if (encryption?.enabled === true) {
-        const encryptionResult = await encryptLogObject(combinedLogObject, encryption.encryptKeys ?? defaultEncryptedKeys, publicKey!)
+        const encryptionResult = await encryptLogObject(
+          combinedLogObject,
+          encryption.encryptKeys ?? defaultEncryptedKeys,
+          publicKey!
+        )
         if (encryptionResult.err === true) {
           throw encryptionResult.val.toString()
         }
@@ -197,7 +231,9 @@ export function createFlytrapLogger<T extends object>({
 
       if (flushMethod === "stdout") {
         console[level](
-          logFormat === "text" ? buildTextLog(logValue) : JSON.stringify(logValue)
+          logFormat === "text"
+            ? buildTextLog(logValue)
+            : JSON.stringify(logValue)
         )
       }
       if (flushMethod === "api") {
@@ -234,7 +270,7 @@ export function createFlytrapLogger<T extends object>({
     // Request utils
     catchUncaughtRoute<
       RequestType extends Request,
-      T extends { params: Record<string, unknown> },
+      T extends { params: Record<string, unknown> }
     >(
       fn: (request: RequestType, context: T) => Promise<Response> | Response,
       options?: Partial<z.infer<typeof baseLogSchema>>

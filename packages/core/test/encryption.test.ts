@@ -1,40 +1,48 @@
-import { expect, it, test, vi } from "vitest";
-import { Log } from "../src/types";
-import { decryptLogObject, encryptLogObject, generateKeyPair } from "../src/encryption";
-import { createFlytrapLogger, defaultEncryptedKeys } from "../src";
+import { expect, it, test, vi } from "vitest"
+import { Log } from "../src/types"
+import {
+  decryptLogObject,
+  encryptLogObject,
+  generateKeyPair,
+} from "../src/encryption"
+import { createFlytrapLogger, defaultEncryptedKeys } from "../src"
 
 const mockLogObject = {
-  method: 'GET',
+  method: "GET",
   type: "request",
-  path: '/api/v1/user',
+  path: "/api/v1/user",
   req: {
-    hello: 'world',
+    hello: "world",
   },
   req_headers: {},
   res: {},
   res_headers: {},
   http_status: 200,
   duration: 13,
-  user_id: 'gavin.belson@hooli.com',
-  user_email: 'gavin.belson@hooli.com'
-} satisfies Log<{}>;
+  user_id: "gavin.belson@hooli.com",
+  user_email: "gavin.belson@hooli.com",
+} satisfies Log<{}>
 
 it("errors when trying to encrypt needed values", async () => {
   expect(() => {
     createFlytrapLogger({
       encryption: {
         enabled: true,
-        encryptKeys: ["http_status"]
-      }
+        encryptKeys: ["http_status"],
+      },
     })
   }).toThrowError()
 })
 
 test("encryptLogObject", async () => {
-  const keyPair = (await generateKeyPair()).unwrap();
-  const encryptedLogObjectResult = await encryptLogObject(mockLogObject, ["req"], keyPair.publicKey);
+  const keyPair = (await generateKeyPair()).unwrap()
+  const encryptedLogObjectResult = await encryptLogObject(
+    mockLogObject,
+    ["req"],
+    keyPair.publicKey
+  )
   if (encryptedLogObjectResult.err === true) {
-    throw 'encrypting failed';
+    throw "encrypting failed"
   }
 
   expect(encryptedLogObjectResult.err).toBe(false)
@@ -44,36 +52,42 @@ test("encryptLogObject", async () => {
 })
 
 test("decryptLogObject", async () => {
-  const keyPair = (await generateKeyPair()).unwrap();
-  const encryptedLogObjectResult = await encryptLogObject(mockLogObject, ["req"], keyPair.publicKey);
+  const keyPair = (await generateKeyPair()).unwrap()
+  const encryptedLogObjectResult = await encryptLogObject(
+    mockLogObject,
+    ["req"],
+    keyPair.publicKey
+  )
   if (encryptedLogObjectResult.err === true) {
-    throw 'encrypting failed'
+    throw "encrypting failed"
   }
-  
-  const decryptedLogObject = await decryptLogObject(encryptedLogObjectResult.val, keyPair.privateKey);
+
+  const decryptedLogObject = await decryptLogObject(
+    encryptedLogObjectResult.val,
+    keyPair.privateKey
+  )
   expect(decryptedLogObject.err).toBe(false)
   expect(decryptedLogObject.val).toStrictEqual(mockLogObject)
 })
 
-
 test("encryption integration", async () => {
-  const logSpy = vi.spyOn(console, 'log');
-  const keyPair = (await generateKeyPair()).unwrap();
+  const logSpy = vi.spyOn(console, "log")
+  const keyPair = (await generateKeyPair()).unwrap()
 
   const logger = createFlytrapLogger<{ customField: string }>({
     flushMethod: "stdout",
     publicKey: keyPair.publicKey,
     encryption: {
       enabled: true,
-      encryptKeys: [...defaultEncryptedKeys, "customField"]
-    }
+      encryptKeys: [...defaultEncryptedKeys, "customField"],
+    },
   })
 
   const mockLogContext: Parameters<typeof logger.addContext>[0] = {
     ...mockLogObject,
-    req: { hello: 'world' },
-    res: { foo: 'bar' },
-    customField: 'custom value',
+    req: { hello: "world" },
+    res: { foo: "bar" },
+    customField: "custom value",
   }
 
   logger.addContext(mockLogContext)
@@ -82,7 +96,9 @@ test("encryption integration", async () => {
 
   expect(logSpy).toHaveBeenCalledOnce()
 
-  const loggedLogObject = JSON.parse(logSpy.mock.calls[0][0] as string) as Log<{ customField: string }>
+  const loggedLogObject = JSON.parse(logSpy.mock.calls[0][0] as string) as Log<{
+    customField: string
+  }>
 
   expect(loggedLogObject.req).toBeTypeOf("object")
   expect(loggedLogObject.req).keys(["type", "data"])
@@ -96,8 +112,11 @@ test("encryption integration", async () => {
   expect(loggedLogObject.res_headers).toBeTypeOf("object")
   expect(loggedLogObject.res_headers).keys(["type", "data"])
 
-  // Let's decrypt it 
-  const decryptResult = await decryptLogObject(loggedLogObject, keyPair.privateKey);
+  // Let's decrypt it
+  const decryptResult = await decryptLogObject(
+    loggedLogObject,
+    keyPair.privateKey
+  )
   if (decryptResult.err === true) {
     throw decryptResult.val.toString()
   }

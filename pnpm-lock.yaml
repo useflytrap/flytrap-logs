@@ -17,6 +17,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@useflytrap/logs-shared':
+        specifier: workspace:*
+        version: link:../shared
       human-logs:
         specifier: ^0.4.1
         version: 0.4.1
@@ -48,9 +51,6 @@ importers:
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.0.2
         version: 7.6.0(@typescript-eslint/parser@7.6.0)(eslint@8.57.0)(typescript@5.4.5)
-      '@useflytrap/logs-shared':
-        specifier: workspace:*
-        version: link:../shared
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
