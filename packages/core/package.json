@@ -36,7 +36,7 @@
 		"test:coverage": "vitest run --coverage",
 		"lint": "pnpm eslint --fix \"{src,test}/**/*.{js,json,ts}\"",
 		"prepublishOnly": "pnpm lint",
-		"release": "np --no-tests"
+		"release": "np"
 	},
 	"dependencies": {
 		"@useflytrap/logs-shared": "workspace:*",
