@@ -1,20 +1,13 @@
 import esbuild from 'rollup-plugin-esbuild'
 import dts from 'rollup-plugin-dts'
 import commonjs from '@rollup/plugin-commonjs'
-import nodeResolve from '@rollup/plugin-node-resolve';
-
-const RESOLVED_PACKAGES = ['serialize-error', '@useflytrap/logs-shared'];
 
 /** @type {import('rollup').RollupOptions[]} */
 export default [
 	// ESM build
 	{
 		input: ["src/index.ts"],
-		plugins: [
-			nodeResolve({ resolveOnly: ['@useflytrap/logs-shared'] }),
-			esbuild(),
-			commonjs()
-		],
+		plugins: [esbuild(), commonjs()],
 		output: [
 			{
 				dir: "dist",
@@ -23,16 +16,7 @@ export default [
 				exports: "named",
 				sourcemap: true,
 			},
-		],
-	},
-	// CJS build
-	{
-		input: ["src/index.ts"],
-		plugins: [nodeResolve({
-      resolveOnly: RESOLVED_PACKAGES
-		}), esbuild(), commonjs()],
-		output: [
-			{
+      {
 				dir: "dist",
 				entryFileNames: "[name].cjs",
 				format: "cjs",

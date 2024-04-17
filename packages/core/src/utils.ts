@@ -1,3 +1,5 @@
+import { EncryptedLogKeyValue } from "./types"
+
 export function parseJsonOrPassthrough<T>(input: T) {
   try {
     return JSON.parse(String(input))
@@ -25,9 +27,8 @@ export function buildJsonLog<T extends object>(logs: Array<Partial<T>>) {
   return logsObj as T
 }
 
-export function buildTextLog<T>(logs: Array<Partial<T>>) {
-  const jsonLine = buildJsonLog(logs)
-  return Object.entries(jsonLine)
+export function buildTextLog(logObject: object) {
+  return Object.entries(logObject)
     .map(([key, value]) => `${key}=${JSON.stringify(value)}`)
     .join(" ")
 }
@@ -53,4 +54,10 @@ export function sendLogToApi<T>(
       console.error(await res.text())
     }
   })
+}
+
+export function isEncryptedLogKeyValue(input: unknown): input is EncryptedLogKeyValue {
+  return typeof input === "object"
+    && (input as EncryptedLogKeyValue).type === "encrypted"
+    && typeof (input as EncryptedLogKeyValue).data === "string"
 }

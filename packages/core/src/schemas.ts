@@ -40,4 +40,3 @@ export const baseLogSchema = z
     user_id: z.string().optional(),
     user_email: z.string().optional(),
   })
-  .passthrough()

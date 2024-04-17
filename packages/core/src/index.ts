@@ -10,9 +10,12 @@ import {
   response,
 } from "./request-utils"
 import { buildJsonLog, buildTextLog, sendLogToApi } from "./utils"
-import { AddContextFn } from "./types"
+import { AddContextFn, FlushLevel, Log } from "./types"
+import { encryptLogObject } from "./encryption"
+import { createError } from "@useflytrap/logs-shared"
+import { invariant } from "./tiny-invariant"
 
-export type FlytrapLogsOptions = {
+export type FlytrapLogsOptions<T extends object> = {
   /**
    * The format in which to log out the canonical log line.
    *
@@ -51,9 +54,14 @@ export type FlytrapLogsOptions = {
   logsEndpoint?: string
 
   /**
-   * The Flytrap public key used to authenticate your requests.
+   * This is the public key sent with `fetch` log ingestion requests as the `Authorization: Bearer <publicKey>` header.
+   * 
+   * The public key should be a base64 encoded public key with the prefix `pk_`.
+   * Refer to [encryption.ts](./encryption.ts) for implementation details.
+   * 
+   * For [Flytrap Logs](https://www.useflytrap.com) users, this is the public key that gets created for you when you make your project.
    */
-  flytrapPublicKey?: string
+  publicKey?: string
 
   /**
    * Options regarding the [Vercel Integration](https://github.com) @TODO
@@ -64,22 +72,66 @@ export type FlytrapLogsOptions = {
      * @default true
      */
     sendLargeLogsToApi?: boolean
+  },
+
+  encryption?: {
+    /**
+     * Enable encryption for your log data. By default, only keys @TODO are encrypted. You can define which keys get encrypted
+     * by using the `encryptKeys` option.
+     */
+    enabled?: boolean;
+    /**
+     * Define which keys of the log object should be encrypted with the public key.
+     */
+    encryptKeys?: (keyof Log<T>)[]
   }
 }
 
-export type FlushLevel = "error" | "warn" | "log"
+export const defaultEncryptedKeys = ["req", "req_headers", "res", "res_headers", "error"] satisfies (keyof Log<{}>)[]
+export const requiredKeys = ["method", "type", "path", "http_status", "duration"] as const
 
-export function createFlytrapLogger<T>({
+export function validateConfig<T extends object>({ encryption, publicKey }: FlytrapLogsOptions<T>) {
+  if (encryption?.enabled && encryption.encryptKeys !== undefined) {
+    type RequiredKey = typeof requiredKeys[number];
+    const matchingRequiredKeys = encryption.encryptKeys.filter((keyToEncrypt): keyToEncrypt is RequiredKey => requiredKeys.includes(keyToEncrypt as RequiredKey))
+
+    if (matchingRequiredKeys.length > 0) {
+      throw createError({
+        events: ["config_invalid"],
+        explanations: ["encrypting_required_keys"],
+        params: {
+          keys: matchingRequiredKeys.map((key) => `\`${String(key)}\``).join(', '),
+        }
+      }).toString()
+    }
+  }
+
+  if (encryption?.enabled === true && publicKey === undefined) {
+    throw createError({
+      events: ["config_invalid"],
+      explanations: ["encryption_enabled_without_pubkey"],
+      solutions: ["add_pubkey", "read_config_docs"]
+    }).toString()
+  }
+}
+
+export function createFlytrapLogger<T extends object>({
   format = "json",
   flushMethod = "api",
   logsEndpoint = "https://flytrap-production.up.railway.app/api/v1/logs/raw",
-  flytrapPublicKey,
+  publicKey,
   vercel,
-}: FlytrapLogsOptions = {}) {
-  const logFormat: FlytrapLogsOptions["format"] =
+  encryption,
+}: FlytrapLogsOptions<T> = {}) {
+  const logFormat: FlytrapLogsOptions<T>["format"] =
     flushMethod === "api" ? "json" : format
+  
+  // Config validation
+  validateConfig({ format, flushMethod, logsEndpoint, publicKey, vercel, encryption });
+  // @todo: more validation that the config is correct,
+  // eg. with format etc
+  // if vercel?.enabled -> need also publicKey
 
-  type Log = z.infer<typeof baseLogSchema> & T
   const defaultLog = {
     type: "request",
     path: "PATH_UNDEFINED",
@@ -92,28 +144,47 @@ export function createFlytrapLogger<T>({
     method: "GET",
   } satisfies z.infer<typeof baseLogSchema>
 
-  const logs: Array<Partial<Log>> = [defaultLog as Log]
+  const logs: Array<Partial<Log<T>>> = [defaultLog as Log<T>]
 
   // Function defintions
   function getContext() {
     return logs
   }
 
-  function addContext(context: Partial<Log>) {
+  function addContext(context: Partial<Log<T>>) {
     logs.push(context)
   }
 
-  function flush(level: FlushLevel = "log") {
+  async function flushAsync(level: FlushLevel = "log") {
     try {
-      if (vercel?.enabled) {
-        const logValue = buildJsonLog(logs)
+      if (encryption?.enabled) {
+        invariant(publicKey, createError({
+          events: ["config_invalid"],
+          explanations: ["encryption_enabled_without_pubkey"],
+          solutions: ["add_pubkey", "read_config_docs"]
+        }).toString())
+      }
 
+      const combinedLogObject = buildJsonLog(logs);
+      let logValue = combinedLogObject;
+
+      // Encryption
+      if (encryption?.enabled === true) {
+        const encryptionResult = await encryptLogObject(combinedLogObject, encryption.encryptKeys ?? defaultEncryptedKeys, publicKey!)
+        if (encryptionResult.err === true) {
+          throw encryptionResult.val.toString()
+        }
+
+        logValue = encryptionResult.val
+      }
+
+      if (vercel?.enabled) {
         if (
           JSON.stringify(logValue).length > 4_000 &&
           vercel.sendLargeLogsToApi !== false
         ) {
           // Send large captures to API
-          sendLogToApi(logValue, logsEndpoint, flytrapPublicKey)
+          await sendLogToApi(logValue, logsEndpoint, publicKey)
         } else {
           // Smaller captures printed to `stdout` are forwarded via the Vercel
           // integration to our server.
@@ -124,17 +195,14 @@ export function createFlytrapLogger<T>({
         return
       }
 
-      const logValue =
-        logFormat === "text" ? buildTextLog(logs) : buildJsonLog(logs)
-
       if (flushMethod === "stdout") {
         console[level](
-          typeof logValue === "string" ? logValue : JSON.stringify(logValue)
+          logFormat === "text" ? buildTextLog(logValue) : JSON.stringify(logValue)
         )
       }
       if (flushMethod === "api") {
         // Send large captures to API
-        sendLogToApi(logValue, logsEndpoint, flytrapPublicKey)
+        await sendLogToApi(logValue, logsEndpoint, publicKey)
       }
     } catch (error) {
       console.error("Flytrap Logs SDK: Error when flushing logs. Error:")
@@ -142,9 +210,14 @@ export function createFlytrapLogger<T>({
     }
   }
 
+  function flush(level: FlushLevel = "log") {
+    flushAsync(level)
+  }
+
   return {
     getContext,
     addContext,
+    flushAsync,
     flush,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
