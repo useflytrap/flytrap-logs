@@ -46,13 +46,25 @@ if (action === "patch") {
 }
 
 if (action === "unpatch") {
+  // Save the `version` from the current package json (it gets bumped by `np`)
+  const { version } = JSON.parse(readFileSync(packageJsonPath).toString())
+
   // Delete
   rmSync(packageJsonPath)
 
   // Copy bak to package.json
-  copyFileSync(backupPackageJsonPath, packageJsonPath);
+  const backupPackageJsonContents = JSON.parse(readFileSync(backupPackageJsonPath).toString())
+  // Replace version
+  backupPackageJsonContents["version"] = version;
+
+  // Write
+  writeFileSync(packageJsonPath, JSON.stringify(backupPackageJsonContents, null, 2))
+
   // Delete
   rmSync(backupPackageJsonPath)
+
+  // pnpm install to link dependencies
+  execaCommandSync("pnpm install", { cwd: dirname(packageJsonPath) })
 
   console.log("Unpatch done.")
 }

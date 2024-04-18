@@ -1,6 +1,6 @@
 {
 	"name": "@useflytrap/logs",
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"description": "Instant Stripe-level observability for your Next.js project",
 	"repository": "useflytrap/flytrap-logs",
 	"engines": {
@@ -64,6 +64,7 @@
 		"rollup": "^4.14.3",
 		"rollup-plugin-dts": "^6.1.0",
 		"rollup-plugin-esbuild": "^6.1.1",
+		"type-fest": "^4.15.0",
 		"typescript": "^5.3.3",
 		"typescript-eslint": "^7.6.0",
 		"vite": "^5.1.4",
