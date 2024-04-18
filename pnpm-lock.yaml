@@ -17,6 +17,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@useflytrap/logs-shared':
+        specifier: workspace:*
+        version: link:../shared
       human-logs:
         specifier: ^0.4.1
         version: 0.4.1
@@ -43,14 +46,11 @@ importers:
         specifier: ^15.2.3
         version: 15.2.3(rollup@4.14.3)
       '@types/node':
-        specifier: ^18.16.0
+        specifier: ^18.19.31
         version: 18.19.31
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.0.2
         version: 7.6.0(@typescript-eslint/parser@7.6.0)(eslint@8.57.0)(typescript@5.4.5)
-      '@useflytrap/logs-shared':
-        specifier: workspace:*
-        version: link:../shared
       eslint:
         specifier: ^8.57.0
         version: 8.57.0
@@ -66,6 +66,9 @@ importers:
       np:
         specifier: ^10.0.3
         version: 10.0.3(typescript@5.4.5)
+      package-up:
+        specifier: ^5.0.0
+        version: 5.0.0
       rollup:
         specifier: ^4.14.3
         version: 4.14.3
@@ -3239,6 +3242,13 @@ packages:
       registry-auth-token: 5.0.2
       registry-url: 6.0.1
       semver: 7.6.0
+    dev: true
+
+  /package-up@5.0.0:
+    resolution: {integrity: sha512-MQEgDUvXCa3sGvqHg3pzHO8e9gqTCMPVrWUko3vPQGntwegmFo52mZb2abIVTjFnUcW0BcPz0D93jV5Cas1DWA==}
+    engines: {node: '>=18'}
+    dependencies:
+      find-up-simple: 1.0.0
     dev: true
 
   /parent-module@1.0.1:
