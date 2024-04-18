@@ -270,7 +270,7 @@ export function createFlytrapLogger<T extends object>({
     // Request utils
     catchUncaughtRoute<
       RequestType extends Request,
-      T extends { params: Record<string, unknown> },
+      T extends { params: Record<string, unknown> }
     >(
       fn: (request: RequestType, context: T) => Promise<Response> | Response,
       options?: Partial<z.infer<typeof baseLogSchema>>
@@ -318,3 +318,9 @@ export function createFlytrapLogger<T extends object>({
     },
   }
 }
+
+export {
+  decryptLogObject,
+  encryptLogObject,
+  generateKeyPair,
+} from "./encryption"
