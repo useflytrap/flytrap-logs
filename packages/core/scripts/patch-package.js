@@ -40,12 +40,8 @@ if (action === "patch") {
 
   execaCommandSync("git add .", { cwd: dirname(packageJsonPath) });
   // Git commit
-  // execaCommandSync(`git commit -m "chore: patch package.json for release"`, { cwd: dirname(packageJsonPath) });
-
   execaSync("git", ["commit", "-m", "chore: patch package.json for release"], { cwd: dirname(packageJsonPath) })
-
-
-
+  
   console.log("Patch done.")
 }
 
