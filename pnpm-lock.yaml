@@ -17,9 +17,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@useflytrap/logs-shared':
-        specifier: workspace:*
-        version: link:../shared
       human-logs:
         specifier: ^0.4.1
         version: 0.4.1
@@ -60,6 +57,9 @@ importers:
       eslint-plugin-prettier:
         specifier: ^5.1.3
         version: 5.1.3(eslint-config-prettier@8.10.0)(eslint@8.57.0)(prettier@3.2.5)
+      execa:
+        specifier: ^8.0.1
+        version: 8.0.1
       globals:
         specifier: ^15.0.0
         version: 15.0.0

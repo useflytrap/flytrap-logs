@@ -1,4 +1,5 @@
 #!/bin/node
+import { execaCommandSync } from "execa";
 import { copyFileSync, readFileSync, rmSync, writeFileSync } from "fs"
 import { packageUp } from 'package-up';
 
@@ -33,6 +34,11 @@ if (action === "patch") {
 
   // Save it
   writeFileSync(packageJsonPath, packageJsonWithoutInternalDependencies);
+
+  // Git add
+  execaCommandSync("git add .", { cwd: packageJsonPath });
+  // Git commit
+  execaCommandSync(`git commit -m "chore: patch package.json for release"`, { cwd: packageJsonPath });
 
   console.log("Patch done.")
 }
