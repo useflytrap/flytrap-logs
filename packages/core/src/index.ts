@@ -324,3 +324,4 @@ export {
   encryptLogObject,
   generateKeyPair,
 } from "./encryption"
+export * from "./types"
