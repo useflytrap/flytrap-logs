@@ -338,7 +338,7 @@ export async function encryptLogObject<T>(
       return encryptResult
     }
 
-    // @ts-expect-error
+    // @ts-expect-error: clone is not indexable by keyToEncrypt so it complains, but undefined check is done above
     logShallowClone[keyToEncrypt] = {
       type: "encrypted",
       data: encryptResult.val,
@@ -358,7 +358,7 @@ export async function decryptLogObject<T>(log: Log<T>, privateKey: string) {
       if (decryptResult.err === true) {
         return decryptResult
       }
-      // @ts-expect-error
+      // @ts-expect-error: dont know what type to cast it to
       logShallowClone[key] = JSON.parse(decryptResult.val)
     }
   }

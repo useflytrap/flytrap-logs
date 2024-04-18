@@ -21,7 +21,7 @@ const mockLogObject = {
   duration: 13,
   user_id: "gavin.belson@hooli.com",
   user_email: "gavin.belson@hooli.com",
-} satisfies Log<{}>
+} satisfies Log<object>
 
 it("errors when trying to encrypt needed values", async () => {
   expect(() => {

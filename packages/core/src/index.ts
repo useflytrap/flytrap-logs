@@ -93,7 +93,7 @@ export const defaultEncryptedKeys = [
   "res",
   "res_headers",
   "error",
-] satisfies (keyof Log<{}>)[]
+] satisfies (keyof Log<object>)[]
 export const requiredKeys = [
   "method",
   "type",
