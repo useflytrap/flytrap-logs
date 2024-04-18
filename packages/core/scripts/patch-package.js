@@ -1,7 +1,8 @@
 #!/bin/node
-import { execaCommandSync } from "execa";
+import { execaCommandSync, execaSync } from "execa";
 import { copyFileSync, readFileSync, rmSync, writeFileSync } from "fs"
 import { packageUp } from 'package-up';
+import { dirname } from "path";
 
 const INTERNAL_DEPENDENCIES = ["@useflytrap/logs-shared"];
 
@@ -36,9 +37,14 @@ if (action === "patch") {
   writeFileSync(packageJsonPath, packageJsonWithoutInternalDependencies);
 
   // Git add
-  execaCommandSync("git add .", { cwd: packageJsonPath });
+
+  execaCommandSync("git add .", { cwd: dirname(packageJsonPath) });
   // Git commit
-  execaCommandSync(`git commit -m "chore: patch package.json for release"`, { cwd: packageJsonPath });
+  // execaCommandSync(`git commit -m "chore: patch package.json for release"`, { cwd: dirname(packageJsonPath) });
+
+  execaSync("git", ["commit", "-m", "chore: patch package.json for release"], { cwd: dirname(packageJsonPath) })
+
+
 
   console.log("Patch done.")
 }
