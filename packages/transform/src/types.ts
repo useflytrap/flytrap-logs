@@ -6,6 +6,7 @@ export type LogsPluginOptions = {
   request?: {
     json?: boolean
     text?: boolean
+    formData?: boolean
   }
   next?: {
     serverActions?: boolean

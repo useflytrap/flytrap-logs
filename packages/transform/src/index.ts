@@ -6,13 +6,7 @@ import { parse } from "@babel/parser"
 import traverse from "@babel/traverse"
 import generate from "@babel/generator"
 import { transformResponse } from "./transforms/response"
-
-import {
-  isMemberExpression,
-  isIdentifier,
-  callExpression,
-  identifier,
-} from "@babel/types"
+import { transformRequest } from "./transforms/request"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options
@@ -39,6 +33,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     traverse(ast, {
       CallExpression(path) {
         transformResponse(path, options)
+        transformRequest(path, options)
       },
     })
 

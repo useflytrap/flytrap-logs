@@ -74,7 +74,7 @@ describe("Response transforms", () => {
     for (let i = 0; i < responseJsonCases.length; i++) {
       const [fixtureName, fixture, target] = responseJsonCases[i]
       it(fixtureName, () => {
-        // @ts-expect-error
+        // @ts-expect-error: unplugin needs bindign, but it's not necessary for tests
         const transformedCode = mockPlugin.transform!(fixture, "")!.code
 
         const transformedAst = parse(transformedCode)
@@ -91,7 +91,7 @@ describe("Response transforms", () => {
     for (let i = 0; i < responseRedirectCases.length; i++) {
       const [fixtureName, fixture, target] = responseRedirectCases[i]
       it(fixtureName, () => {
-        // @ts-expect-error
+        // @ts-expect-error: unplugin needs bindign, but it's not necessary for tests
         const transformedCode = mockPlugin.transform!(fixture, "")!.code
 
         const transformedAst = parse(transformedCode)

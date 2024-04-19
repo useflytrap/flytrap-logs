@@ -79,7 +79,7 @@ export async function parseText(
 
 export function catchUncaughtRoute<
   RequestType extends Request,
-  T extends { params: Record<string, unknown> }
+  T extends { params: Record<string, unknown> },
 >(
   fn: (request: RequestType, context: T) => Promise<Response> | Response,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
