@@ -96,6 +96,7 @@ export function catchUncaughtRoute<
       const res = await fn(request, context)
       addContext({
         res_headers: headersToRecord(res.headers),
+        http_status: res.status,
       })
       addContext({
         duration: Date.now() - t0,
