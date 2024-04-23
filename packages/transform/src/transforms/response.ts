@@ -5,8 +5,45 @@ import {
   callExpression,
   identifier,
   CallExpression,
+  isReturnStatement,
+  objectExpression,
+  objectProperty,
+  expressionStatement,
+  NewExpression,
+  Expression,
 } from "@babel/types"
 import { NodePath } from "@babel/traverse"
+
+export function transformResponseInstance(
+  path: NodePath<NewExpression>,
+  options: LogsPluginOptions = {}
+) {
+  if (
+    options.response?.classInstance !== false &&
+    isIdentifier(path.node.callee, { name: "Response" }) &&
+    path.node.arguments.length >= 1
+  ) {
+    // Create the `addContext` call expression
+    const responseArg = path.node.arguments[0]
+
+    const addContextCall = expressionStatement(
+      callExpression(identifier("addContext"), [
+        objectExpression([
+          objectProperty(identifier("res"), responseArg as Expression),
+        ]),
+      ])
+    )
+
+    // Insert the `addContext` call before the `new Response` depending on context
+    if (isReturnStatement(path.parent)) {
+      // Add before the return statement
+      path.parentPath.insertBefore(addContextCall)
+    } else {
+      // Insert directly before this statement
+      path.insertBefore(addContextCall)
+    }
+  }
+}
 
 export function transformResponse(
   path: NodePath<CallExpression>,

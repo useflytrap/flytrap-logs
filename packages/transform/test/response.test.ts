@@ -69,12 +69,45 @@ const responseRedirectCases = [
   ],
 ]
 
+const responseInstanceCases = [
+  [
+    "does not transform non-global `Response`",
+    `class Response {}; new Response()`,
+    `class Response {}; new Response()`,
+  ],
+  [
+    "does not transform non-global `Response` (parent scope)",
+    `class Response {}; { new Response(); }`,
+    `class Response {}; { new Response(); }`,
+  ],
+  [
+    "does not transform non-global `Response` (grandparent scope)",
+    `class Response {}; {{ new Response(); }}`,
+    `class Response {}; {{ new Response(); }}`,
+  ],
+  [
+    "adds body to context from `new Response`",
+    `new Response("Hello World")`,
+    `addContext({ res: "Hello World" }); new Response("Hello World")`,
+  ],
+  [
+    "adds status to context from `new Response`",
+    `new Response("Hello World", { status: 200 })`,
+    `addContext({ res: "Hello World" }); new Response("Hello World", { status: 200 })`,
+  ],
+  [
+    "undefined ResponseInit",
+    `new Response("Hello World", undefined);`,
+    `addContext({ res: "Hello World" }); new Response("Hello World", undefined);`,
+  ],
+]
+
 describe("Response transforms", () => {
   describe("Response.json", () => {
     for (let i = 0; i < responseJsonCases.length; i++) {
       const [fixtureName, fixture, target] = responseJsonCases[i]
       it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs bindign, but it's not necessary for tests
+        // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
         const transformedCode = mockPlugin.transform!(fixture, "")!.code
 
         const transformedAst = parse(transformedCode)
@@ -91,7 +124,24 @@ describe("Response transforms", () => {
     for (let i = 0; i < responseRedirectCases.length; i++) {
       const [fixtureName, fixture, target] = responseRedirectCases[i]
       it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs bindign, but it's not necessary for tests
+        // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
+        const transformedCode = mockPlugin.transform!(fixture, "")!.code
+
+        const transformedAst = parse(transformedCode)
+        const targetAst = parse(target)
+
+        expect(generate(transformedAst, {}, fixture).code).toBe(
+          generate(targetAst, {}, target).code
+        )
+      })
+    }
+  })
+
+  describe("new Response", () => {
+    for (let i = 0; i < responseInstanceCases.length; i++) {
+      const [fixtureName, fixture, target] = responseInstanceCases[i]
+      it(fixtureName, () => {
+        // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
         const transformedCode = mockPlugin.transform!(fixture, "")!.code
 
         const transformedAst = parse(transformedCode)

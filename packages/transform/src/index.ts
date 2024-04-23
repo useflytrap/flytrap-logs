@@ -5,7 +5,10 @@ import type { LogsPluginOptions } from "./types"
 import { parse } from "@babel/parser"
 import traverse from "@babel/traverse"
 import generate from "@babel/generator"
-import { transformResponse } from "./transforms/response"
+import {
+  transformResponse,
+  transformResponseInstance,
+} from "./transforms/response"
 import { transformRequest } from "./transforms/request"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
@@ -34,6 +37,9 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       CallExpression(path) {
         transformResponse(path, options)
         transformRequest(path, options)
+      },
+      NewExpression(path) {
+        transformResponseInstance(path, options)
       },
     })
 

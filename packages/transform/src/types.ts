@@ -2,6 +2,7 @@ export type LogsPluginOptions = {
   response?: {
     json?: boolean
     redirect?: boolean
+    classInstance?: boolean
   }
   request?: {
     json?: boolean
