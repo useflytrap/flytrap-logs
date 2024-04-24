@@ -1,16 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { unpluginFactory } from "../src"
-import { UnpluginOptions } from "unplugin"
-
-import { parse } from "@babel/parser"
-import generate from "@babel/generator"
-
-const mockPlugin = unpluginFactory(
-  {},
-  {
-    framework: "vite",
-  }
-) as UnpluginOptions
+import { describe } from "vitest"
+import { createDescribe } from "./test-utils"
 
 const requestJsonCases = [
   [
@@ -40,54 +29,7 @@ const requestFormDataCases = [
 ]
 
 describe("Request transforms", () => {
-  describe("Request.json", () => {
-    for (let i = 0; i < requestJsonCases.length; i++) {
-      const [fixtureName, fixture, target] = requestJsonCases[i]
-      it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs bindign, but it's not necessary for tests
-        const transformedCode = mockPlugin.transform!(fixture, "")!.code
-
-        const transformedAst = parse(transformedCode)
-        const targetAst = parse(target)
-
-        expect(generate(transformedAst, {}, fixture).code).toBe(
-          generate(targetAst, {}, target).code
-        )
-      })
-    }
-  })
-
-  describe("Request.text", () => {
-    for (let i = 0; i < requestTextCases.length; i++) {
-      const [fixtureName, fixture, target] = requestTextCases[i]
-      it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs bindign, but it's not necessary for tests
-        const transformedCode = mockPlugin.transform!(fixture, "")!.code
-
-        const transformedAst = parse(transformedCode)
-        const targetAst = parse(target)
-
-        expect(generate(transformedAst, {}, fixture).code).toBe(
-          generate(targetAst, {}, target).code
-        )
-      })
-    }
-  })
-
-  describe("Request.formData", () => {
-    for (let i = 0; i < requestFormDataCases.length; i++) {
-      const [fixtureName, fixture, target] = requestFormDataCases[i]
-      it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs bindign, but it's not necessary for tests
-        const transformedCode = mockPlugin.transform!(fixture, "")!.code
-
-        const transformedAst = parse(transformedCode)
-        const targetAst = parse(target)
-
-        expect(generate(transformedAst, {}, fixture).code).toBe(
-          generate(targetAst, {}, target).code
-        )
-      })
-    }
-  })
+  createDescribe("Request.json", requestJsonCases)
+  createDescribe("Request.text", requestTextCases)
+  createDescribe("Request.formData", requestFormDataCases)
 })

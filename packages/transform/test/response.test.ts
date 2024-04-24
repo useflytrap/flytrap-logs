@@ -1,16 +1,5 @@
-import { describe, expect, it } from "vitest"
-import { unpluginFactory } from "../src"
-import { UnpluginOptions } from "unplugin"
-
-import { parse } from "@babel/parser"
-import generate from "@babel/generator"
-
-const mockPlugin = unpluginFactory(
-  {},
-  {
-    framework: "vite",
-  }
-) as UnpluginOptions
+import { describe } from "vitest"
+import { createDescribe } from "./test-utils"
 
 const responseJsonCases = [
   [
@@ -38,6 +27,24 @@ const responseJsonCases = [
     "passes on args to `Response.json`",
     `Response.json('', { status: 400 })`,
     `json('', { status: 400 })`,
+  ],
+]
+
+const nextResponseJsonCases = [
+  [
+    "passes on args to `NextResponse.json`",
+    `NextResponse.json('')`,
+    `nextJson('')`,
+  ],
+  [
+    "passes on args to `NextResponse.json`",
+    `NextResponse.json('', {})`,
+    `nextJson('', {})`,
+  ],
+  [
+    "passes on args to `NextResponse.json`",
+    `NextResponse.json('', { status: 400 })`,
+    `nextJson('', { status: 400 })`,
   ],
 ]
 
@@ -69,6 +76,19 @@ const responseRedirectCases = [
   ],
 ]
 
+const nextResponseRedirectCases = [
+  [
+    "passes on args to `NextResponse.redirect`",
+    `NextResponse.redirect('')`,
+    `nextRedirect('')`,
+  ],
+  [
+    "passes on args to `NextResponse.redirect`",
+    `NextResponse.redirect('', 400)`,
+    `nextRedirect('', 400)`,
+  ],
+]
+
 const responseInstanceCases = [
   [
     "does not transform non-global `Response`",
@@ -88,69 +108,55 @@ const responseInstanceCases = [
   [
     "adds body to context from `new Response`",
     `new Response("Hello World")`,
-    `addContext({ res: "Hello World" }); new Response("Hello World")`,
+    `response("Hello World")`,
   ],
   [
     "adds status to context from `new Response`",
     `new Response("Hello World", { status: 200 })`,
-    `addContext({ res: "Hello World" }); new Response("Hello World", { status: 200 })`,
+    `response("Hello World", { status: 200 })`,
   ],
   [
     "undefined ResponseInit",
     `new Response("Hello World", undefined);`,
-    `addContext({ res: "Hello World" }); new Response("Hello World", undefined);`,
+    `response("Hello World", undefined);`,
+  ],
+  [
+    "Returning Response",
+    `const x = () => new Response("Hello World", undefined);`,
+    `const x = () => response("Hello World", undefined);`,
+  ],
+]
+
+const nextResponseInstanceCases = [
+  [
+    "adds body to context from `new Response`",
+    `new NextResponse("Hello World")`,
+    `nextResponse("Hello World")`,
+  ],
+  [
+    "adds status to context from `new Response`",
+    `new NextResponse("Hello World", { status: 200 })`,
+    `nextResponse("Hello World", { status: 200 })`,
+  ],
+  [
+    "undefined ResponseInit",
+    `new NextResponse("Hello World", undefined);`,
+    `nextResponse("Hello World", undefined);`,
+  ],
+  [
+    "Returning NextResponse",
+    `const x = () => new NextResponse("Hello World", undefined);`,
+    `const x = () => nextResponse("Hello World", undefined);`,
   ],
 ]
 
 describe("Response transforms", () => {
-  describe("Response.json", () => {
-    for (let i = 0; i < responseJsonCases.length; i++) {
-      const [fixtureName, fixture, target] = responseJsonCases[i]
-      it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
-        const transformedCode = mockPlugin.transform!(fixture, "")!.code
+  createDescribe("Response.json", responseJsonCases)
+  createDescribe("NextResponse.json", nextResponseJsonCases)
 
-        const transformedAst = parse(transformedCode)
-        const targetAst = parse(target)
+  createDescribe("Response.redirect", responseRedirectCases)
+  createDescribe("NextResponse.redirect", nextResponseRedirectCases)
 
-        expect(generate(transformedAst, {}, fixture).code).toBe(
-          generate(targetAst, {}, target).code
-        )
-      })
-    }
-  })
-
-  describe("Response.redirect", () => {
-    for (let i = 0; i < responseRedirectCases.length; i++) {
-      const [fixtureName, fixture, target] = responseRedirectCases[i]
-      it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
-        const transformedCode = mockPlugin.transform!(fixture, "")!.code
-
-        const transformedAst = parse(transformedCode)
-        const targetAst = parse(target)
-
-        expect(generate(transformedAst, {}, fixture).code).toBe(
-          generate(targetAst, {}, target).code
-        )
-      })
-    }
-  })
-
-  describe("new Response", () => {
-    for (let i = 0; i < responseInstanceCases.length; i++) {
-      const [fixtureName, fixture, target] = responseInstanceCases[i]
-      it(fixtureName, () => {
-        // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
-        const transformedCode = mockPlugin.transform!(fixture, "")!.code
-
-        const transformedAst = parse(transformedCode)
-        const targetAst = parse(target)
-
-        expect(generate(transformedAst, {}, fixture).code).toBe(
-          generate(targetAst, {}, target).code
-        )
-      })
-    }
-  })
+  createDescribe("new Response", responseInstanceCases)
+  createDescribe("new NextResponse", nextResponseInstanceCases)
 })

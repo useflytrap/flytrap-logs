@@ -4,6 +4,7 @@ import { z } from "zod"
 import { headersToRecord, parseJsonOrPassthrough } from "./utils"
 import { AddContextFn, FlushFn } from "./types"
 import { headers } from "next/headers"
+import { NextResponse } from "next/server"
 
 export function response(
   body: BodyInit,
@@ -18,6 +19,19 @@ export function response(
   return new Response(body, opts)
 }
 
+export function nextResponse(
+  body: BodyInit,
+  opts: ResponseInit = {},
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
+) {
+  addContext({
+    res: parseJsonOrPassthrough(body),
+    http_status: opts?.status ?? 200,
+  })
+
+  return new NextResponse(body, opts)
+}
+
 export function json(
   data: unknown,
   opts: ResponseInit = {},
@@ -28,6 +42,18 @@ export function json(
     http_status: opts.status ?? 200,
   })
   return Response.json(data, opts)
+}
+
+export function nextJson(
+  data: unknown,
+  opts: ResponseInit = {},
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
+) {
+  addContext({
+    res: data,
+    http_status: opts.status ?? 200,
+  })
+  return NextResponse.json(data, opts)
 }
 
 export function redirect(
@@ -41,10 +67,26 @@ export function redirect(
   return Response.redirect(url, status)
 }
 
+export function nextRedirect(
+  url: string | URL,
+  status: number = 302,
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>
+) {
+  addContext({
+    http_status: status,
+  })
+  return NextResponse.redirect(url, status)
+}
+
 export async function parseJson(
   request: Request,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>
 ) {
+  if (!(request instanceof Request)) {
+    // @ts-expect-error: this is here in cases where the transform transforms `.json` calls which aren't actually
+    // called on a `Request` class instance.
+    return request.json()
+  }
   try {
     const requestBody = await request.json()
     addContext({
@@ -63,6 +105,11 @@ export async function parseText(
   request: Request,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>
 ) {
+  if (!(request instanceof Request)) {
+    // @ts-expect-error: this is here in cases where the transform transforms `.text` calls which aren't actually
+    // called on a `Request` class instance.
+    return request.text()
+  }
   try {
     const requestBody = await request.text()
     addContext({

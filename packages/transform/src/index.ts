@@ -35,11 +35,50 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     // Traverse the AST and transform
     traverse(ast, {
       CallExpression(path) {
-        transformResponse(path, options)
+        // `Response.(json | text | redirect)`
+        transformResponse(path, {
+          ...options,
+          response: {
+            ...options?.response,
+            ensureGlobalResponse:
+              options?.response?.ensureGlobalResponse ?? true,
+          },
+        })
+        // `NextResponse.(json | text | redirect)`
+        transformResponse(path, {
+          ...options,
+          response: {
+            json: options?.next?.nextResponse?.json ?? "nextJson",
+            redirect: options?.next?.nextResponse?.redirect ?? "nextRedirect",
+            classInstanceName: "NextResponse",
+          },
+        })
+
         transformRequest(path, options)
       },
       NewExpression(path) {
-        transformResponseInstance(path, options)
+        // `new Response(...)`
+        transformResponseInstance(path, {
+          ...options,
+          response: {
+            ...options?.response,
+            ensureGlobalResponse:
+              options?.response?.ensureGlobalResponse ?? true,
+          },
+        })
+        // `new NextResponse(...)`
+        if (options?.next?.nextResponse?.classInstance !== false) {
+          transformResponseInstance(path, {
+            ...options,
+            response: {
+              json: options.next?.nextResponse?.json ?? "nextJson",
+              classInstance:
+                options.next?.nextResponse.classInstance ?? "nextResponse",
+              classInstanceName:
+                options.next?.nextResponse?.classInstanceName ?? "NextResponse",
+            },
+          })
+        }
       },
     })
 

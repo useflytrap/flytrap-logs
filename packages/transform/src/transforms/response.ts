@@ -5,12 +5,7 @@ import {
   callExpression,
   identifier,
   CallExpression,
-  isReturnStatement,
-  objectExpression,
-  objectProperty,
-  expressionStatement,
   NewExpression,
-  Expression,
 } from "@babel/types"
 import { NodePath } from "@babel/traverse"
 
@@ -20,27 +15,45 @@ export function transformResponseInstance(
 ) {
   if (
     options.response?.classInstance !== false &&
-    isIdentifier(path.node.callee, { name: "Response" }) &&
-    path.node.arguments.length >= 1
+    isIdentifier(path.node.callee, {
+      name: options.response?.classInstanceName ?? "Response",
+    })
   ) {
-    // Create the `addContext` call expression
-    const responseArg = path.node.arguments[0]
+    if (options.response.ensureGlobalResponse) {
+      // Ensure 'Response' is the global Web API Response object
+      let currentScope = path.scope
+      let isShadowed = false
 
-    const addContextCall = expressionStatement(
-      callExpression(identifier("addContext"), [
-        objectExpression([
-          objectProperty(identifier("res"), responseArg as Expression),
-        ]),
-      ])
-    )
+      // Traverse up the scope chain to check if 'Response' is redefined
+      while (currentScope) {
+        if (
+          currentScope.hasOwnBinding(
+            options.response.classInstanceName ?? "Response"
+          )
+        ) {
+          isShadowed = true
+          break
+        }
+        currentScope = currentScope.parent
+      }
 
-    // Insert the `addContext` call before the `new Response` depending on context
-    if (isReturnStatement(path.parent)) {
-      // Add before the return statement
-      path.parentPath.insertBefore(addContextCall)
+      if (isShadowed === false) {
+        // Replace `new Response(...)` with `response(...)`
+        path.replaceWith(
+          callExpression(
+            identifier(options.response?.classInstance ?? "response"),
+            path.node.arguments
+          )
+        )
+      }
     } else {
-      // Insert directly before this statement
-      path.insertBefore(addContextCall)
+      // Replace `new Response(...)` with `response(...)`
+      path.replaceWith(
+        callExpression(
+          identifier(options.response?.classInstance ?? "response"),
+          path.node.arguments
+        )
+      )
     }
   }
 }
@@ -53,25 +66,45 @@ export function transformResponse(
   if (
     options.response?.json !== false &&
     isMemberExpression(path.node.callee) &&
-    isIdentifier(path.node.callee.object, { name: "Response" }) &&
+    isIdentifier(path.node.callee.object, {
+      name: options.response?.classInstanceName ?? "Response",
+    }) &&
     isIdentifier(path.node.callee.property, { name: "json" })
   ) {
-    // Ensure 'Response' is the global Web API Response object
-    let currentScope = path.scope
-    let isShadowed = false
+    if (options.response.ensureGlobalResponse) {
+      // Ensure 'Response' is the global Web API Response object
+      let currentScope = path.scope
+      let isShadowed = false
 
-    // Traverse up the scope chain to check if 'Response' is redefined
-    while (currentScope) {
-      if (currentScope.hasOwnBinding("Response")) {
-        isShadowed = true
-        break
+      // Traverse up the scope chain to check if 'Response' is redefined
+      while (currentScope) {
+        if (
+          currentScope.hasOwnBinding(
+            options.response?.classInstanceName ?? "Response"
+          )
+        ) {
+          isShadowed = true
+          break
+        }
+        currentScope = currentScope.parent
       }
-      currentScope = currentScope.parent
-    }
 
-    if (isShadowed === false) {
-      // Replace `Response.json()` with `json()`
-      path.replaceWith(callExpression(identifier("json"), path.node.arguments))
+      if (isShadowed === false) {
+        // Replace `Response.json()` with `json()`
+        path.replaceWith(
+          callExpression(
+            identifier(options.response?.json ?? "json"),
+            path.node.arguments
+          )
+        )
+      }
+    } else {
+      path.replaceWith(
+        callExpression(
+          identifier(options.response?.json ?? "json"),
+          path.node.arguments
+        )
+      )
     }
   }
 
@@ -79,26 +112,44 @@ export function transformResponse(
   if (
     options.response?.redirect !== false &&
     isMemberExpression(path.node.callee) &&
-    isIdentifier(path.node.callee.object, { name: "Response" }) &&
+    isIdentifier(path.node.callee.object, {
+      name: options.response?.classInstanceName ?? "Response",
+    }) &&
     isIdentifier(path.node.callee.property, { name: "redirect" })
   ) {
-    // Ensure 'Response' is the global Web API Response object
-    let currentScope = path.scope
-    let isShadowed = false
+    if (options.response.ensureGlobalResponse) {
+      // Ensure 'Response' is the global Web API Response object
+      let currentScope = path.scope
+      let isShadowed = false
 
-    // Traverse up the scope chain to check if 'Response' is redefined
-    while (currentScope) {
-      if (currentScope.hasOwnBinding("Response")) {
-        isShadowed = true
-        break
+      // Traverse up the scope chain to check if 'Response' is redefined
+      while (currentScope) {
+        if (
+          currentScope.hasOwnBinding(
+            options.response?.classInstanceName ?? "Response"
+          )
+        ) {
+          isShadowed = true
+          break
+        }
+        currentScope = currentScope.parent
       }
-      currentScope = currentScope.parent
-    }
 
-    if (isShadowed === false) {
-      // Replace `Response.redirect()` with `redirect()`
+      if (isShadowed === false) {
+        // Replace `Response.redirect()` with `redirect()`
+        path.replaceWith(
+          callExpression(
+            identifier(options.response?.redirect ?? "redirect"),
+            path.node.arguments
+          )
+        )
+      }
+    } else {
       path.replaceWith(
-        callExpression(identifier("redirect"), path.node.arguments)
+        callExpression(
+          identifier(options.response?.redirect ?? "redirect"),
+          path.node.arguments
+        )
       )
     }
   }
