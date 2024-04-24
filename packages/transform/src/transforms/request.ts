@@ -6,7 +6,7 @@ import {
   identifier,
   CallExpression,
 } from "@babel/types"
-import { NodePath } from "@babel/traverse"
+import type { NodePath } from "@babel/traverse"
 
 export function transformRequest(
   path: NodePath<CallExpression>,

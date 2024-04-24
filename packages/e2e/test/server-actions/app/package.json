@@ -1,0 +1,19 @@
+{
+  "name": "server-actions-tests",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "latest",
+    "@useflytrap/logs": "latest",
+    "@useflytrap/logs-transform": "latest"
+  }
+}

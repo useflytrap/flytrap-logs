@@ -3,13 +3,12 @@ import { createUnplugin } from "unplugin"
 import type { LogsPluginOptions } from "./types"
 
 import { parse } from "@babel/parser"
-import traverse from "@babel/traverse"
-import generate from "@babel/generator"
 import {
   transformResponse,
   transformResponseInstance,
 } from "./transforms/response"
 import { transformRequest } from "./transforms/request"
+import { generate, traverse } from "./import-utils"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options
@@ -71,11 +70,12 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
           transformResponseInstance(path, {
             ...options,
             response: {
-              json: options.next?.nextResponse?.json ?? "nextJson",
+              json: options?.next?.nextResponse?.json ?? "nextJson",
               classInstance:
-                options.next?.nextResponse.classInstance ?? "nextResponse",
+                options?.next?.nextResponse?.classInstance ?? "nextResponse",
               classInstanceName:
-                options.next?.nextResponse?.classInstanceName ?? "NextResponse",
+                options?.next?.nextResponse?.classInstanceName ??
+                "NextResponse",
             },
           })
         }
@@ -87,5 +87,3 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
 })
 
 export const unplugin = /* #__PURE__ */ createUnplugin(unpluginFactory)
-
-export * from "./exports"

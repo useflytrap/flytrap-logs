@@ -10,6 +10,8 @@ import {
 } from "unplugin"
 import { unpluginFactory } from "./index"
 
+export * from "./index"
+
 export const rollup = createRollupPlugin(unpluginFactory)
 export const vite = createVitePlugin(unpluginFactory)
 export const webpack = createWebpackPlugin(unpluginFactory)

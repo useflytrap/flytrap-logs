@@ -7,7 +7,7 @@ import {
   CallExpression,
   NewExpression,
 } from "@babel/types"
-import { NodePath } from "@babel/traverse"
+import type { NodePath } from "@babel/traverse"
 
 export function transformResponseInstance(
   path: NodePath<NewExpression>,
