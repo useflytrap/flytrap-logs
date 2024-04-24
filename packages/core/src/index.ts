@@ -4,6 +4,9 @@ import {
   catchUncaughtAction,
   catchUncaughtRoute,
   json,
+  nextJson,
+  nextRedirect,
+  nextResponse,
   parseJson,
   parseText,
   redirect,
@@ -302,6 +305,13 @@ export function createFlytrapLogger<T extends object>({
         addContext as AddContextFn<z.infer<typeof baseLogSchema>>
       )
     },
+    nextResponse(body: BodyInit, opts: ResponseInit = {}) {
+      return nextResponse(
+        body,
+        opts,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
+    },
     json(data: unknown, opts: ResponseInit = {}) {
       return json(
         data,
@@ -309,8 +319,22 @@ export function createFlytrapLogger<T extends object>({
         addContext as AddContextFn<z.infer<typeof baseLogSchema>>
       )
     },
+    nextJson(data: unknown, opts: ResponseInit = {}) {
+      return nextJson(
+        data,
+        opts,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
+    },
     redirect(url: string | URL, status?: number) {
       return redirect(
+        url,
+        status,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>
+      )
+    },
+    nextRedirect(url: string | URL, status?: number) {
+      return nextRedirect(
         url,
         status,
         addContext as AddContextFn<z.infer<typeof baseLogSchema>>
