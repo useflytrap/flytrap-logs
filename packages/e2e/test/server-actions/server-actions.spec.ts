@@ -6,6 +6,7 @@ const { test } = createNextTest({
   path: join(getDirname(import.meta.url), "app"),
   port: 3001,
   debug: true,
+  showStdout: true,
   ...(process.env.CI === undefined && {
     dependencies: {
       "@useflytrap/logs": `link:${join(

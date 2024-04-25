@@ -15,6 +15,7 @@ export type LogsPluginOptions = {
     serverActions?: boolean
     serverActionsPaths?: string[]
     routeHandlers?: boolean
+    routeHandlerPaths?: string[]
     nextRequest?: {
       json?: boolean
       text?: boolean

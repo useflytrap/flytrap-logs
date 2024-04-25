@@ -14,17 +14,43 @@ const mockPlugin = unpluginFactory(
 export function createDescribe(name: string, testCases: string[][]) {
   describe(name, () => {
     for (let i = 0; i < testCases.length; i++) {
-      const [fixtureName, fixture, target] = testCases[i]
+      const [fixtureName, fixture, target, filepath = ""] = testCases[i]
       it(fixtureName, () => {
         // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
-        const transformedCode = mockPlugin.transform!(fixture, "")!.code
+        const transformedCode = mockPlugin.transform!(fixture, filepath)!.code
 
-        const transformedAst = parse(transformedCode)
-        const targetAst = parse(target)
+        console.log("TRANSFORMED CODD :")
+        console.log(transformedCode)
+
+        try {
+          const transformedAst = parse(transformedCode, {
+            sourceType: "module",
+          })
+          // const targetAst = parse(target, { sourceType: "module" })
+        } catch (e) {
+          console.log(e)
+          console.log(" EE eE_ _E- e")
+        }
+        const transformedAst = parse(transformedCode, { sourceType: "module" })
+        const targetAst = parse(target, { sourceType: "module" })
 
         expect(generate(transformedAst, {}, fixture).code).toBe(
           generate(targetAst, {}, target).code
         )
+      })
+    }
+  })
+}
+
+export function createErrorDescribe(name: string, testCases: string[][]) {
+  describe(name, () => {
+    for (let i = 0; i < testCases.length; i++) {
+      const [fixtureName, fixture, filepath = ""] = testCases[i]
+      it(fixtureName, () => {
+        expect(() => {
+          // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
+          return mockPlugin.transform!(fixture, filepath)!.code
+        }).toThrowError()
       })
     }
   })

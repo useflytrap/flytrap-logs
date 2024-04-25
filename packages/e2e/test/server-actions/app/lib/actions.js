@@ -1,5 +1,5 @@
 "use server";
 
-async function testAction(payload) {
-  return "Response from Test Action"
+export async function testAction(payload) {
+  return { hello: "world" };
 }
