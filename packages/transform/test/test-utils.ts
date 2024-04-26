@@ -19,18 +19,6 @@ export function createDescribe(name: string, testCases: string[][]) {
         // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
         const transformedCode = mockPlugin.transform!(fixture, filepath)!.code
 
-        console.log("TRANSFORMED CODD :")
-        console.log(transformedCode)
-
-        try {
-          const transformedAst = parse(transformedCode, {
-            sourceType: "module",
-          })
-          // const targetAst = parse(target, { sourceType: "module" })
-        } catch (e) {
-          console.log(e)
-          console.log(" EE eE_ _E- e")
-        }
         const transformedAst = parse(transformedCode, { sourceType: "module" })
         const targetAst = parse(target, { sourceType: "module" })
 

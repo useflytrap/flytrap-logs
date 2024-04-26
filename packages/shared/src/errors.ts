@@ -11,6 +11,12 @@ export const createError = createHumanLogs({
       template: 'Parsing file "{fileNamePath}" failed.',
       params: { fileNamePath: "" },
     },
+    transform_failed: {
+      template: `Transforming file at path "{filenamePath}" with the Flytrap Logs plugin failed`,
+      params: {
+        filenamePath: "",
+      },
+    },
   },
   explanations: {
     // Request fail explanations
@@ -22,6 +28,15 @@ export const createError = createHumanLogs({
         method: "",
         endpoint: "",
         error: "",
+      },
+    },
+
+    // Transform explanations
+    disallowed_syntax_found: {
+      template:
+        "because disallowed syntax `{syntax}` was found in your code. This syntax is disallowed by default because using it with the Flytrap Logs plugin might change the way your code functions.",
+      params: {
+        syntax: "",
       },
     },
 
@@ -91,6 +106,19 @@ export const createError = createHumanLogs({
     },
   },
   solutions: {
+    // Transform solutions
+    ignore_disallowed_syntax: {
+      template:
+        "If you want to allow this syntax, add the `ignoreDisallowedSyntax` to your plugin configuration. Make sure to check that your code functions correctly, before deploying to production.",
+      params: {},
+      actions: [
+        {
+          text: "Read more in the documentation",
+          href: "https://docs.useflytrap.com",
+        },
+      ],
+    },
+
     // Config solutions
     add_pubkey: {
       template: `Add the \`publicKey\` config option to your \`createFlytrapLogger\` options.`,

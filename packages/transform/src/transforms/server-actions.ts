@@ -1,13 +1,9 @@
 import { LogsPluginOptions } from "../types"
 import {
-  isMemberExpression,
   isIdentifier,
   callExpression,
   identifier,
-  CallExpression,
   Program,
-  isExpressionStatement,
-  isStringLiteral,
   stringLiteral,
   objectProperty,
   objectExpression,
@@ -16,16 +12,21 @@ import {
   functionExpression,
   variableDeclaration,
   variableDeclarator,
-  isArrowFunctionExpression,
-  isFunctionExpression,
-  VariableDeclaration,
   isDirective,
   isDirectiveLiteral,
+  isExportDefaultDeclaration,
+  ArrowFunctionExpression,
+  isVariableDeclarator,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
+import { Err, Ok } from "ts-results"
+import { createError } from "@useflytrap/logs-shared"
+import { generate } from "../import-utils"
 
 function hasServerDirective(
-  path: NodePath<FunctionDeclaration | VariableDeclaration>
+  path: NodePath<
+    ArrowFunctionExpression | FunctionExpression | FunctionDeclaration
+  >
 ) {
   return (
     path.findParent((p) => p.isProgram()) as NodePath<Program> | undefined
@@ -38,70 +39,156 @@ function hasServerDirective(
 }
 
 export function createCatchUncaughtAction(
-  funcNode: FunctionExpression,
-  name: string
+  funcNode: ArrowFunctionExpression | FunctionExpression,
+  name: string,
+  filepath: string
 ) {
   return callExpression(identifier("catchUncaughtAction"), [
     funcNode,
     objectExpression([
-      objectProperty(
-        identifier("path"),
-        stringLiteral(`@/lib/actions/${name}`)
-      ),
+      objectProperty(identifier("path"), stringLiteral(`${filepath}/${name}`)),
     ]),
   ])
 }
 
-export function transformFunctionDeclaration(
-  path: NodePath<FunctionDeclaration>,
+// @todo: fix this super naive check
+function checkUnallowedSyntax(code: string, filenamePath: string) {
+  if (code.includes("this.")) {
+    return Err(
+      createError({
+        events: ["transform_failed"],
+        explanations: ["disallowed_syntax_found"],
+        solutions: ["ignore_disallowed_syntax"],
+        params: {
+          filenamePath,
+          syntax: "this.",
+        },
+      })
+    )
+  }
+  if (code.includes("arguments[")) {
+    return Err(
+      createError({
+        events: ["transform_failed"],
+        explanations: ["disallowed_syntax_found"],
+        solutions: ["ignore_disallowed_syntax"],
+        params: {
+          filenamePath,
+          syntax: "arguments[",
+        },
+      })
+    )
+  }
+  return Ok(undefined)
+}
+
+export function transformFunctions(
+  path: NodePath<ArrowFunctionExpression | FunctionExpression>,
+  exportNames: string[],
+  filepath: string,
   options: LogsPluginOptions = {}
 ) {
-  if (hasServerDirective(path) === false) return
+  if (hasServerDirective(path) === false) return Ok(undefined)
 
   if (options.next?.serverActions !== false) {
-    const funcNode = functionExpression(
+    if (isVariableDeclarator(path.parent)) {
+      const name = isIdentifier(path.parent.id)
+        ? path.parent.id.name
+        : undefined
+
+      if (name && exportNames.includes(name)) {
+        // Check for unallowed syntax
+        const unallowedSyntax = checkUnallowedSyntax(
+          generate(path.node).code,
+          filepath
+        )
+        if (unallowedSyntax.err) {
+          return unallowedSyntax
+        }
+
+        const wrapper = createCatchUncaughtAction(path.node, name, filepath)
+        path.replaceWith(wrapper)
+      }
+    }
+  }
+  return Ok(undefined)
+}
+
+export function transformFunctionDeclaration(
+  path: NodePath<FunctionDeclaration>,
+  exportNames: string[],
+  filepath: string,
+  options: LogsPluginOptions = {}
+) {
+  if (hasServerDirective(path) === false) return Ok(undefined)
+
+  if (options.next?.serverActions !== false) {
+    if (!path.node.id) {
+      // @todo: replace with human-friendly error
+      throw new Error(`Path node ID is null.`)
+    }
+
+    console.log(" PATH NODE ID NAME ", path.node.id.name)
+    console.log(exportNames)
+    if (exportNames.includes(path.node.id.name)) {
+      // Check for unallowed syntax
+      const unallowedSyntax = checkUnallowedSyntax(
+        generate(path.node).code,
+        filepath
+      )
+      if (unallowedSyntax.err) {
+        return unallowedSyntax
+      }
+
+      const funcNode = functionExpression(
+        path.node.id,
+        path.node.params,
+        path.node.body,
+        path.node.generator,
+        path.node.async
+      )
+      const wrapper = createCatchUncaughtAction(
+        funcNode,
+        path.node.id.name,
+        filepath
+      )
+
+      if (isExportDefaultDeclaration(path.parent)) {
+        path.replaceWith(wrapper)
+        return Ok(undefined)
+      }
+
+      path.replaceWith(
+        variableDeclaration("const", [
+          variableDeclarator(identifier(path.node.id.name), wrapper),
+        ])
+      )
+    }
+
+    /* const funcNode = functionExpression(
       path.node.id,
       path.node.params,
       path.node.body,
       path.node.generator,
       path.node.async
     )
-    const wrapper = createCatchUncaughtAction(funcNode, path.node.id.name)
+    const wrapper = createCatchUncaughtAction(
+      funcNode,
+      path.node.id.name,
+      filepath
+    )
 
-    // if ()
-    /* if (path.parentPath.isExportNamedDeclaration()) {
-      console.log(" IS ANMED AD D_- - - -- - -- - -- - -");
-      path.parentPath.node.declaration = wrapper
+    if (isExportDefaultDeclaration(path.parent)) {
+      path.replaceWith(wrapper)
       return
-      // return path.replaceWith(wrapper)
-    } */
+    }
 
     path.replaceWith(
       variableDeclaration("const", [
         variableDeclarator(identifier(path.node.id.name), wrapper),
       ])
-    )
+    ) */
   }
-}
 
-export function transformVariableDeclaration(
-  path: NodePath<VariableDeclaration>,
-  options: LogsPluginOptions = {}
-) {
-  if (hasServerDirective(path) === false) return
-
-  if (options.next?.serverActions !== false) {
-    path.node.declarations.forEach((declaration) => {
-      if (
-        isFunctionExpression(declaration.init) ||
-        isArrowFunctionExpression(declaration.init)
-      ) {
-        const wrapper = createCatchUncaughtAction(
-          declaration.init,
-          declaration.id.name
-        )
-        declaration.init = wrapper
-      }
-    })
-  }
+  return Ok(undefined)
 }

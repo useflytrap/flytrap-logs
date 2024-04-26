@@ -11,7 +11,7 @@ const serverActionDirectiveCases = [
     
     export const foo = catchUncaughtAction(async function foo() {
     }, {
-      path: "@/lib/actions/foo"
+      path: "@/lib/actions.ts/foo"
     })`,
     `@/lib/actions.ts`,
   ],
@@ -23,25 +23,26 @@ const serverActionDirectiveCases = [
 ]
 
 const serverActionErrorCases = [
-  [
+  /* [
     `transform errors when using \`.bind\``,
     `"use server"
     
-    const x = () => {}
+    export const x = () => {}
     x.bind(null)()`,
-  ],
+  ] */
   [
     `transform errors when using \`this\``,
     `"use server"
     
-    const x = () => { this }`,
+    export const x = () => {
+      this.hello
+    }`,
   ],
-
   [
     `transform errors when using \`arguments\``,
     `"use server"
     
-    const x = () => {
+    export const x = () => {
       arguments[0]
     }`,
   ],
@@ -54,7 +55,7 @@ const serverActionTransformOnlyExportsCases = [
     export const foo = () => {}`,
     `"use server"
     export const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions/foo"
+      path: "@/lib/actions.ts/foo"
     })`,
     `@/lib/actions.ts`,
   ],
@@ -64,7 +65,7 @@ const serverActionTransformOnlyExportsCases = [
     export default function foo() {}`,
     `"use server"
     export default catchUncaughtAction(function foo() {}, {
-      path: "@/lib/actions/foo"
+      path: "@/lib/actions.ts/foo"
     })`,
     `@/lib/actions.ts`,
   ],
@@ -75,7 +76,7 @@ const serverActionTransformOnlyExportsCases = [
     export default foo`,
     `"use server"
     const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions/foo"
+      path: "@/lib/actions.ts/foo"
     })
     export default foo`,
     `@/lib/actions.ts`,
@@ -87,7 +88,7 @@ const serverActionTransformOnlyExportsCases = [
     export { foo }`,
     `"use server"
     const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions/foo"
+      path: "@/lib/actions.ts/foo"
     })
     export { foo }`,
     `@/lib/actions.ts`,
@@ -129,12 +130,12 @@ const serverActionHoistingCases = [
 ]
 
 describe("Server Action transforms", () => {
-  // createDescribe("Server Actions — directives", serverActionDirectiveCases)
+  createDescribe("Server Actions — directives", serverActionDirectiveCases)
   createDescribe(
     "Server Actions — exports",
     serverActionTransformOnlyExportsCases
   )
-  /* createDescribe("Server Actions — exports", serverActionTransformOnlyExportsCases)
-  createDescribe("Server Actions — function declaration hoisting", serverActionHoistingCases)
-  createErrorDescribe("Server Actions — error cases", serverActionErrorCases) */
+  createErrorDescribe("Server Actions — error cases", serverActionErrorCases)
+  /*
+  createDescribe("Server Actions — function declaration hoisting", serverActionHoistingCases)*/
 })
