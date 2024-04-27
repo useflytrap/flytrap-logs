@@ -27,43 +27,13 @@ export const DEFAULT_SERVER_ACTIONS_PATHS = [
 ]
 
 import { findExports } from "mlly"
+import { hoistChecker } from "./transforms/hoist-checker"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options
 ) => ({
   name: "flytrap-logs-transform",
   transformInclude(id) {
-    // @note: we should match almost everything, and transform almost evertyhign
-    // but do the route transforms and actions transforms only after confirming from AST that the file is
-    // A route handler file or a server action
-
-    /* console.log("transformInclude CWD:  ", cwd())
-    const allowedRoutes = [
-      ...options?.next?.routeHandlerPaths ?? DEFAULT_ROUTE_HANDLER_PATHS,
-      ...options?.next?.serverActionsPaths ?? DEFAULT_SERVER_ACTIONS_PATHS
-    ]
-    console.log("allowed routes .")
-
-    let isMatched = false
-
-    // we shou
-
-    for (let i = 0; i < allowedRoutes.length; i++) {
-      const isMatch = picomatch(allowedRoutes[i])
-      if (isMatch(id)) {
-        isMatched = true
-      }
-    }
-
-    return isMatched;
-
-    /* if (isMatched === false) {
-      return false
-    } */
-
-    // if (options?.next.server)
-    // Server Actions
-
     if (id.endsWith(".d.ts")) return false
     if (id.match(/\.((c|m)?j|t)sx?$/g)) return true
     return false
@@ -71,8 +41,6 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   transform(code, id) {
     if (code.includes("@flytrap-ignore")) return code
 
-    // @todo: this logic shouldn't be here
-    // Exports
     const exports = findExports(code)
     const exportNames = exports
       .map((e) => {
@@ -156,6 +124,11 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
         }
       },
     })
+
+    const genCode = generate(ast, {}, code).code
+
+    // Hoist checker
+    hoistChecker(genCode, id).unwrap()
 
     return generate(ast, {}, code)
   },

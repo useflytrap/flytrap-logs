@@ -64,9 +64,10 @@ const serverActionTransformOnlyExportsCases = [
     `"use server"
     export default function foo() {}`,
     `"use server"
-    export default catchUncaughtAction(function foo() {}, {
+    const foo = catchUncaughtAction(function foo() {}, {
       path: "@/lib/actions.ts/foo"
-    })`,
+    })
+    export default foo`,
     `@/lib/actions.ts`,
   ],
   [
@@ -104,28 +105,25 @@ const serverActionTransformOnlyExportsCases = [
 
 const serverActionHoistingCases = [
   [
-    `hoists exported function declarations`,
+    `errors for non-hoisted exported function declarations (named)`,
     `"use server"
+    import { x } from "foo"
     foo()
     export function foo() {}`,
-    `"use server"
-    const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions/foo"
-    })
-    foo()`,
-    `@/lib/actions.ts`,
   ],
   [
-    `doesn't hoist function expressions`,
+    `errors for non-hoisted exported function declarations (named)`,
     `"use server"
-    foo()
-    export const foo = () => {}`,
+    import { x } from "foo"
+    fooX()
+    export function foo() {}`,
+  ],
+  [
+    `errors for non-hoisted exported function declarations (default)`,
     `"use server"
+    import { x } from "foo"
     foo()
-    const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions/foo"
-    })`,
-    `@/lib/actions.ts`,
+    export default function foo() {}`,
   ],
 ]
 
@@ -136,6 +134,8 @@ describe("Server Action transforms", () => {
     serverActionTransformOnlyExportsCases
   )
   createErrorDescribe("Server Actions — error cases", serverActionErrorCases)
-  /*
-  createDescribe("Server Actions — function declaration hoisting", serverActionHoistingCases)*/
+  createErrorDescribe(
+    "Server Actions — function declaration hoisting errors",
+    serverActionHoistingCases
+  )
 })

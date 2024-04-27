@@ -17,6 +17,9 @@ import {
   isExportDefaultDeclaration,
   ArrowFunctionExpression,
   isVariableDeclarator,
+  ImportDeclaration,
+  exportNamedDeclaration,
+  exportDefaultDeclaration,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
 import { Err, Ok } from "ts-results"
@@ -128,8 +131,6 @@ export function transformFunctionDeclaration(
       throw new Error(`Path node ID is null.`)
     }
 
-    console.log(" PATH NODE ID NAME ", path.node.id.name)
-    console.log(exportNames)
     if (exportNames.includes(path.node.id.name)) {
       // Check for unallowed syntax
       const unallowedSyntax = checkUnallowedSyntax(
@@ -154,7 +155,15 @@ export function transformFunctionDeclaration(
       )
 
       if (isExportDefaultDeclaration(path.parent)) {
-        path.replaceWith(wrapper)
+        path.parentPath.replaceWith(
+          variableDeclaration("const", [
+            variableDeclarator(identifier(path.node.id.name), wrapper),
+          ])
+        )
+        // Add export default for the new const variable
+        path.parentPath.insertAfter(
+          exportDefaultDeclaration(identifier(path.node.id.name))
+        )
         return Ok(undefined)
       }
 
@@ -164,30 +173,6 @@ export function transformFunctionDeclaration(
         ])
       )
     }
-
-    /* const funcNode = functionExpression(
-      path.node.id,
-      path.node.params,
-      path.node.body,
-      path.node.generator,
-      path.node.async
-    )
-    const wrapper = createCatchUncaughtAction(
-      funcNode,
-      path.node.id.name,
-      filepath
-    )
-
-    if (isExportDefaultDeclaration(path.parent)) {
-      path.replaceWith(wrapper)
-      return
-    }
-
-    path.replaceWith(
-      variableDeclaration("const", [
-        variableDeclarator(identifier(path.node.id.name), wrapper),
-      ])
-    ) */
   }
 
   return Ok(undefined)

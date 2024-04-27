@@ -39,6 +39,15 @@ export const createError = createHumanLogs({
         syntax: "",
       },
     },
+    hoisting_error: {
+      template:
+        "because you have a call for the function `{functionName}` on line {lineNumber} before its definition on line {definitionLine}.\n\nNormally function declarations are hoisted, but since the Flytrap Logs plugin changes them for `const` definitions, they're no longer hoisted.",
+      params: {
+        functionName: "",
+        lineNumber: "",
+        definitionLine: "",
+      },
+    },
 
     // Config error explanations
     encrypting_required_keys: {
@@ -115,6 +124,24 @@ export const createError = createHumanLogs({
         {
           text: "Read more in the documentation",
           href: "https://docs.useflytrap.com",
+        },
+      ],
+    },
+    hoisting_fix_move_function_def: {
+      template:
+        "To fix this problem, simply manually move the function definition above the line {lineNumber}",
+      params: {
+        lineNumber: "",
+      },
+    },
+    request_hoisting_fix: {
+      template:
+        "Request a feature for automatically handling hoisting in the Flytrap Logs plugin.",
+      params: {},
+      actions: [
+        {
+          text: "Open an issue on GitHub",
+          href: "https://www.github.com",
         },
       ],
     },
