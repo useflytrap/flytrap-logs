@@ -28,6 +28,10 @@ export const DEFAULT_SERVER_ACTIONS_PATHS = [
 
 import { findExports } from "mlly"
 import { hoistChecker } from "./transforms/hoist-checker"
+import {
+  transformRouteFunctionDeclaration,
+  transformRouteFunctions,
+} from "./transforms/route-handlers"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options
@@ -66,14 +70,17 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       // Server Actions
       FunctionDeclaration(path) {
         transformFunctionDeclaration(path, exportNames, id, options).unwrap()
+        transformRouteFunctionDeclaration(path, id, options).unwrap()
       },
 
       ArrowFunctionExpression(path) {
         transformFunctions(path, exportNames, id, options).unwrap()
+        transformRouteFunctions(path, id, options).unwrap()
       },
 
       FunctionExpression(path) {
         transformFunctions(path, exportNames, id, options).unwrap()
+        transformRouteFunctions(path, id, options).unwrap()
       },
 
       CallExpression(path) {
