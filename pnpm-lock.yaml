@@ -102,6 +102,9 @@ importers:
       '@playwright/test':
         specifier: ^1.43.1
         version: 1.43.1
+      '@types/node':
+        specifier: ^20.12.7
+        version: 20.12.7
       '@useflytrap/logs':
         specifier: workspace:*
         version: link:../core
@@ -1194,6 +1197,12 @@ packages:
 
   /@types/node@18.19.31:
     resolution: {integrity: sha512-ArgCD39YpyyrtFKIqMDvjz79jto5fcI/SVUs2HwB+f0dAzq68yqOdyaSivLiLugSziTpNXLQrVb7RZFmdZzbhA==}
+    dependencies:
+      undici-types: 5.26.5
+    dev: true
+
+  /@types/node@20.12.7:
+    resolution: {integrity: sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==}
     dependencies:
       undici-types: 5.26.5
     dev: true

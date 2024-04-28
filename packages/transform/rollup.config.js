@@ -1,7 +1,12 @@
 import esbuild from 'rollup-plugin-esbuild'
 import dts from 'rollup-plugin-dts'
 import commonjs from '@rollup/plugin-commonjs'
+import nodeResolve from '@rollup/plugin-node-resolve';
 
+const RESOLVED_PACKAGES = [
+	"ts-results",
+	'@useflytrap/logs-shared'
+]
 const EXTERNALS = ["unplugin", "@babel/parser", "@babel/traverse", "@babel/generator", "@babel/types"];
 
 /** @type {import('rollup').RollupOptions[]} */
@@ -11,6 +16,7 @@ export default [
 		input: ["src/exports.ts"],
     external: EXTERNALS,
 		plugins: [
+			nodeResolve({ resolveOnly: RESOLVED_PACKAGES }),
 			esbuild(),
 			commonjs()
 		],
@@ -29,6 +35,7 @@ export default [
 		input: ["src/exports.ts"],
     external: EXTERNALS,
 		plugins: [
+			nodeResolve({ resolveOnly: RESOLVED_PACKAGES }),
       esbuild(),
       commonjs()
     ],

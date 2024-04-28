@@ -7,6 +7,7 @@ const { test } = createNextTest({
   port: 3001,
   debug: true,
   showStdout: true,
+  skipTempdirCleanup: true,
   ...(process.env.CI === undefined && {
     dependencies: {
       "@useflytrap/logs": `link:${join(

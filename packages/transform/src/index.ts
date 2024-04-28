@@ -38,6 +38,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
 ) => ({
   name: "flytrap-logs-transform",
   transformInclude(id) {
+    if (id.includes("/node_modules/")) return false
     if (id.endsWith(".d.ts")) return false
     if (id.match(/\.((c|m)?j|t)sx?$/g)) return true
     return false
