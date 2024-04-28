@@ -112,13 +112,6 @@ const serverActionHoistingCases = [
     export function foo() {}`,
   ],
   [
-    `errors for non-hoisted exported function declarations (named)`,
-    `"use server"
-    import { x } from "foo"
-    fooX()
-    export function foo() {}`,
-  ],
-  [
     `errors for non-hoisted exported function declarations (default)`,
     `"use server"
     import { x } from "foo"

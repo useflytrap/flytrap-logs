@@ -17,8 +17,6 @@ import {
   isExportDefaultDeclaration,
   ArrowFunctionExpression,
   isVariableDeclarator,
-  ImportDeclaration,
-  exportNamedDeclaration,
   exportDefaultDeclaration,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
@@ -93,7 +91,10 @@ export function transformFunctions(
 ) {
   if (hasServerDirective(path) === false) return Ok(undefined)
 
-  if (options.next?.serverActions !== false) {
+  if (
+    options.next?.serverActions !== false &&
+    ["ArrowFunctionExpression", "FunctionExpression"].includes(path.node.type)
+  ) {
     if (isVariableDeclarator(path.parent)) {
       const name = isIdentifier(path.parent.id)
         ? path.parent.id.name
@@ -125,7 +126,10 @@ export function transformFunctionDeclaration(
 ) {
   if (hasServerDirective(path) === false) return Ok(undefined)
 
-  if (options.next?.serverActions !== false) {
+  if (
+    options.next?.serverActions !== false &&
+    path.node.type === "FunctionDeclaration"
+  ) {
     if (!path.node.id) {
       // @todo: replace with human-friendly error
       throw new Error(`Path node ID is null.`)
