@@ -139,6 +139,17 @@ const serverActionHoistingSuccessCases = [
     json()
     response()`,
   ],
+  [
+    `doesn't check variables defined with \`var\``,
+    `"use server"
+    import { x } from "foo"
+    c()
+    var c = () => {}`,
+    `"use server"
+    import { x } from "foo"
+    c()
+    var c = () => {}`,
+  ],
 ]
 
 describe("Server Action transforms", () => {
@@ -153,7 +164,7 @@ describe("Server Action transforms", () => {
     serverActionHoistingCases
   )
   createDescribe(
-    "Server Actions — function declaaration hoisting success cases",
+    "Server Actions — function declaration hoisting success cases",
     serverActionHoistingSuccessCases
   )
 })
