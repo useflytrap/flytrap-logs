@@ -127,6 +127,27 @@ const serverActionHoistingCases = [
   ],
 ]
 
+const serverActionHoistingSuccessCases = [
+  [
+    `doesn't error for imported values`,
+    `"use server"
+    import { x } from "foo"
+    x()`,
+    `"use server"
+    import { x } from "foo"
+    x()`,
+  ],
+  [
+    `doesn't error for a value that isn't defined as a const at some point`,
+    `"use server"
+    Response.json()
+    new Response()`,
+    `"use server"
+    json()
+    response()`,
+  ],
+]
+
 describe("Server Action transforms", () => {
   createDescribe("Server Actions — directives", serverActionDirectiveCases)
   createDescribe(
@@ -137,5 +158,9 @@ describe("Server Action transforms", () => {
   createErrorDescribe(
     "Server Actions — function declaration hoisting errors",
     serverActionHoistingCases
+  )
+  createDescribe(
+    "Server Actions — function declaaration hoisting success cases",
+    serverActionHoistingSuccessCases
   )
 })

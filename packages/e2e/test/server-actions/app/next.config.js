@@ -5,7 +5,7 @@ const nextConfig = {
 	webpack(config) {
 		config.plugins = config.plugins ?? []
 		config.infrastructureLogging = { level: 'error' }
-		config.plugins.push(webpack({
+		config.plugins.unshift(webpack({
 			next: {
 				serverActionsPaths: [
 					"./lib/actions.js"
