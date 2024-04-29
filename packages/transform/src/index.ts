@@ -135,10 +135,10 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       },
     })
 
-    const genCode = generate(ast, {}, code).code
+    const generatedCode = generate(ast, {}, code)
 
     // Hoist checker
-    hoistChecker(genCode, id).unwrap()
+    hoistChecker(generatedCode.code, id).unwrap()
 
     // Write diffs
     if (options?.diffs !== false) {
@@ -146,13 +146,11 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
         options?.packageJsonDir ?? cwd(),
         basename(id),
         code,
-        genCode
+        generatedCode.code
       ).unwrap()
     }
 
-    return genCode
-
-    // return generate(ast, {}, code)
+    return generatedCode
   },
 })
 

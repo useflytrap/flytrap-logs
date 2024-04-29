@@ -5,7 +5,9 @@ import { unpluginFactory } from "../src"
 import { UnpluginOptions } from "unplugin"
 
 const mockPlugin = unpluginFactory(
-  {},
+  {
+    diffs: false,
+  },
   {
     framework: "vite",
   }
