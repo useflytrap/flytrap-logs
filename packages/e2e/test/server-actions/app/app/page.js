@@ -8,6 +8,7 @@ export default function Home() {
     await testAction({
       foo: "bar"
     })
+    console.log("ACTION DONE")
   }
 
   return (

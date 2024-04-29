@@ -53,7 +53,8 @@ export function createCatchUncaughtAction(
 }
 
 // @todo: fix this super naive check
-function checkUnallowedSyntax(code: string, filenamePath: string) {
+// @todo: remove code duplication
+function checkUnallowedSyntax(code: string, filePath: string) {
   if (code.includes("this.")) {
     return Err(
       createError({
@@ -61,7 +62,7 @@ function checkUnallowedSyntax(code: string, filenamePath: string) {
         explanations: ["disallowed_syntax_found"],
         solutions: ["ignore_disallowed_syntax"],
         params: {
-          filenamePath,
+          filePath,
           syntax: "this.",
         },
       })
@@ -74,7 +75,7 @@ function checkUnallowedSyntax(code: string, filenamePath: string) {
         explanations: ["disallowed_syntax_found"],
         solutions: ["ignore_disallowed_syntax"],
         params: {
-          filenamePath,
+          filePath,
           syntax: "arguments[",
         },
       })

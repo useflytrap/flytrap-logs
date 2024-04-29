@@ -44,8 +44,10 @@
     "@babel/traverse": "^7.24.1",
     "@babel/types": "^7.24.0",
     "@useflytrap/logs-shared": "workspace:*",
+    "diff": "^5.2.0",
     "human-logs": "^0.4.1",
     "mlly": "^1.6.1",
+    "picocolors": "^1.0.0",
     "picomatch": "^4.0.2",
     "ts-results": "^3.3.0",
     "unplugin": "^1.10.1"
@@ -56,6 +58,7 @@
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.5",
+    "@types/diff": "^5.2.0",
     "@types/node": "^18.19.31",
     "@types/picomatch": "^2.3.3",
     "@typescript-eslint/eslint-plugin": "^7.0.2",

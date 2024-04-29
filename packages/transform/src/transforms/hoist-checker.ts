@@ -2,13 +2,15 @@ import { isIdentifier, isVariableDeclaration } from "@babel/types"
 import { createError } from "@useflytrap/logs-shared"
 import { Err, Ok } from "ts-results"
 import { traverse } from "../import-utils"
-import { parse } from "@babel/parser"
+import type { ParserOptions } from "@babel/parser"
+import { parseCode } from "../parser"
 
-export function hoistChecker(code: string, filenamePath: string) {
-  const ast = parse(code, {
-    sourceType: "module",
-    plugins: ["typescript"], // assuming TypeScript code
-  })
+export function hoistChecker(
+  code: string,
+  filePath: string,
+  parserOptions?: ParserOptions
+) {
+  const ast = parseCode(code, filePath, parserOptions).unwrap()
 
   type DefinitionLocation = {
     name: string
@@ -58,7 +60,7 @@ export function hoistChecker(code: string, filenamePath: string) {
           explanations: ["hoisting_error"],
           solutions: ["hoisting_fix_move_function_def", "request_hoisting_fix"],
           params: {
-            filenamePath,
+            filePath,
             functionName: variablesDefined[i].name,
             definitionLine: String(variablesDefined[i].line),
             lineNumber: String(referencedVariablesWithLargerIndex[0].line),

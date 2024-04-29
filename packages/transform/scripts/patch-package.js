@@ -37,7 +37,6 @@ if (action === "patch") {
   writeFileSync(packageJsonPath, packageJsonWithoutInternalDependencies);
 
   // Git add
-
   execaCommandSync("git add .", { cwd: dirname(packageJsonPath) });
   // Git commit
   execaSync("git", ["commit", "-m", "chore: patch package.json for release"], { cwd: dirname(packageJsonPath) })

@@ -1,6 +1,6 @@
 import { join } from "path"
 import { createNextTest } from "../fixture"
-import { getDirname } from "../test-utils"
+import { getDirname, getNextConsoleLogs } from "../test-utils"
 
 const { test } = createNextTest({
   path: join(getDirname(import.meta.url), "app"),
@@ -36,6 +36,10 @@ test.describe("Server Actions", () => {
 
     // Click the button
     await page.getByRole("button", { name: "Send JSON" }).click()
+
+    const logs = await getNextConsoleLogs(page)
+    console.log("LOGS: ")
+    console.log(logs)
 
     // Check that the log was output to stdout
   })

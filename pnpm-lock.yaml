@@ -208,12 +208,18 @@ importers:
       '@useflytrap/logs-shared':
         specifier: workspace:*
         version: link:../shared
+      diff:
+        specifier: ^5.2.0
+        version: 5.2.0
       human-logs:
         specifier: ^0.4.1
         version: 0.4.1
       mlly:
         specifier: ^1.6.1
         version: 1.6.1
+      picocolors:
+        specifier: ^1.0.0
+        version: 1.0.0
       picomatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -239,6 +245,9 @@ importers:
       '@types/babel__traverse':
         specifier: ^7.20.5
         version: 7.20.5
+      '@types/diff':
+        specifier: ^5.2.0
+        version: 5.2.0
       '@types/node':
         specifier: ^18.19.31
         version: 18.19.31
@@ -1183,6 +1192,10 @@ packages:
       '@babel/types': 7.24.0
     dev: true
 
+  /@types/diff@5.2.0:
+    resolution: {integrity: sha512-pjJH+02ukgJRW0mViDUA1cdC+wzSgRu0e4cPuogPLAw0i66y62iMP0ZlXoJAmoXrKRZnF3pMDwyKZsgNVlMX4A==}
+    dev: true
+
   /@types/estree@1.0.5:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
     dev: true
@@ -2002,6 +2015,11 @@ packages:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dev: true
+
+  /diff@5.2.0:
+    resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
+    engines: {node: '>=0.3.1'}
+    dev: false
 
   /dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}

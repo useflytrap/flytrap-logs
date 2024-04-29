@@ -8,13 +8,13 @@ export const createError = createHumanLogs({
     encrypting_log_failed: "Encrypting your log failed",
     crypto_generate_key_failed: "Generating an RSA key pair failed",
     parsing_failed: {
-      template: 'Parsing file "{fileNamePath}" failed.',
-      params: { fileNamePath: "" },
+      template: 'Parsing file "{filePath}" failed.',
+      params: { filePath: "" },
     },
     transform_failed: {
-      template: `Transforming file at path "{filenamePath}" with the Flytrap Logs plugin failed`,
+      template: `Transforming file at path "{filePath}" with the Flytrap Logs plugin failed`,
       params: {
-        filenamePath: "",
+        filePath: "",
       },
     },
   },
@@ -46,6 +46,21 @@ export const createError = createHumanLogs({
         functionName: "",
         lineNumber: "",
         definitionLine: "",
+      },
+    },
+    writing_diffs_failed: {
+      template:
+        "because writing diffs failed with an error. Error: \n\n{error}",
+      params: {
+        error: "",
+      },
+    },
+    parsing_failed: {
+      template:
+        "because parsing the file at path `{filePath}` with Babel failed. Error: \n\n{error}\n\n",
+      params: {
+        filePath: "",
+        error: "",
       },
     },
 
@@ -142,6 +157,28 @@ export const createError = createHumanLogs({
         {
           text: "Open an issue on GitHub",
           href: "https://www.github.com",
+        },
+      ],
+    },
+    disable_diffs: {
+      template:
+        "If you want to disable diffing for the code-transform, pass in `diffs`: false to your Flytrap Logs plugin configuration.",
+      params: {},
+      actions: [
+        {
+          text: "Read the Flytrap Logs plugin docs",
+          href: "https://docs.useflytrap.com/",
+        },
+      ],
+    },
+    define_babel_parse_options: {
+      template:
+        "If you have unsupported syntax in your code such as do expressions or throw expressions, you can fix this error by adding those plugins to the `babel` key in your Flytrap Logs plugin options.",
+      params: {},
+      actions: [
+        {
+          text: "Learn how to edit Babel parse options",
+          href: "https://docs.useflytrap.com/",
         },
       ],
     },

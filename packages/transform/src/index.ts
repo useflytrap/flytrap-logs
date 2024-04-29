@@ -32,11 +32,16 @@ import {
   transformRouteFunctionDeclaration,
   transformRouteFunctions,
 } from "./transforms/route-handlers"
+import { writeDiff } from "./diff"
+import { basename } from "path"
+import { cwd } from "process"
+import { parseCode } from "./parser"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options
 ) => ({
   name: "flytrap-logs-transform",
+  enforce: "pre",
   transformInclude(id) {
     if (id.includes("/node_modules/")) return false
     if (id.endsWith(".d.ts")) return false
@@ -61,10 +66,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       .filter(Boolean) as string[]
 
     // Parse the code into an AST
-    const ast = parse(code, {
-      sourceType: "module",
-      plugins: ["typescript"], // assuming TypeScript code
-    })
+    const ast = parseCode(code, id, options?.babel?.parserOptions).unwrap()
 
     // Traverse the AST and transform
     traverse(ast, {
@@ -138,7 +140,19 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     // Hoist checker
     hoistChecker(genCode, id).unwrap()
 
-    return generate(ast, {}, code)
+    // Write diffs
+    if (options?.diffs !== false) {
+      writeDiff(
+        options?.packageJsonDir ?? cwd(),
+        basename(id),
+        code,
+        genCode
+      ).unwrap()
+    }
+
+    return genCode
+
+    // return generate(ast, {}, code)
   },
 })
 
