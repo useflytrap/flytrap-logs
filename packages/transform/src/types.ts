@@ -33,8 +33,10 @@ export type LogsPluginOptions = {
   babel?: {
     parserOptions?: ParserOptions
   }
-  packageJsonDir?: string
+  packageJsonDirPath?: string
   diffs?: boolean
+  exportsFilePath?: string
+  autoImports?: boolean
 }
 
 // Source: https://github.com/babel/babel/blob/main/packages/babel-parser/src/parse-error.ts

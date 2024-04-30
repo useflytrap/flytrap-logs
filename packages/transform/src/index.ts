@@ -36,6 +36,7 @@ import { writeDiff } from "./diff"
 import { basename } from "path"
 import { cwd } from "process"
 import { parseCode } from "./parser"
+import { addAutoImports } from "./transforms/auto-import"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options
@@ -143,11 +144,16 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     // Write diffs
     if (options?.diffs !== false) {
       writeDiff(
-        options?.packageJsonDir ?? cwd(),
+        options?.packageJsonDirPath ?? cwd(),
         basename(id),
         code,
         generatedCode.code
       ).unwrap()
+    }
+
+    // Add imports
+    if (options.autoImports !== false) {
+      return addAutoImports(generatedCode.code, [], id, options).unwrap()
     }
 
     return generatedCode

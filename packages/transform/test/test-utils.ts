@@ -3,20 +3,29 @@ import { parse } from "@babel/parser"
 import generate from "@babel/generator"
 import { unpluginFactory } from "../src"
 import { UnpluginOptions } from "unplugin"
+import { LogsPluginOptions } from "../src/types"
 
-const mockPlugin = unpluginFactory(
-  {
-    diffs: false,
-  },
-  {
-    framework: "vite",
-  }
-) as UnpluginOptions
-
-export function createDescribe(name: string, testCases: string[][]) {
+export function createDescribe(
+  name: string,
+  testCases: string[][],
+  options: LogsPluginOptions = {}
+) {
   describe(name, () => {
     for (let i = 0; i < testCases.length; i++) {
-      const [fixtureName, fixture, target, filepath = ""] = testCases[i]
+      const [fixtureName, fixture, target, filepath = "/file.ts"] = testCases[i]
+
+      const mockPlugin = unpluginFactory(
+        {
+          diffs: false,
+          autoImports: false,
+          packageJsonDirPath: "/",
+          ...options,
+        },
+        {
+          framework: "vite",
+        }
+      ) as UnpluginOptions
+
       it(fixtureName, () => {
         // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
         const transformedCode = mockPlugin.transform!(fixture, filepath)!.code
@@ -32,7 +41,23 @@ export function createDescribe(name: string, testCases: string[][]) {
   })
 }
 
-export function createErrorDescribe(name: string, testCases: string[][]) {
+export function createErrorDescribe(
+  name: string,
+  testCases: string[][],
+  options: LogsPluginOptions = {}
+) {
+  const mockPlugin = unpluginFactory(
+    {
+      diffs: false,
+      autoImports: false,
+      packageJsonDirPath: "/",
+      ...options,
+    },
+    {
+      framework: "vite",
+    }
+  ) as UnpluginOptions
+
   describe(name, () => {
     for (let i = 0; i < testCases.length; i++) {
       const [fixtureName, fixture, filepath = ""] = testCases[i]
