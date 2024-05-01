@@ -153,7 +153,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
 
     // Add imports
     if (options.autoImports !== false) {
-      return addAutoImports(generatedCode.code, [], id, options).unwrap()
+      return addAutoImports(generatedCode.code, id, options).unwrap()
     }
 
     return generatedCode

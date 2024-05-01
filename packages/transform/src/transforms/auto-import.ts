@@ -1,7 +1,15 @@
 import { Ok } from "ts-results"
 import { parseCode } from "../parser"
 import MagicString from "magic-string"
-import { dirname, extname, join, relative } from "path"
+import {
+  basename,
+  dirname,
+  extname,
+  format,
+  join,
+  normalize,
+  relative,
+} from "path"
 import { findStaticImports, parseStaticImport } from "mlly"
 import { cwd } from "process"
 import { LogsPluginOptions } from "../types"
@@ -27,6 +35,18 @@ function findImportStartingIndex(code: string, filePath: string) {
   const astResult = parseCode(code, filePath)
   if (astResult.err) return astResult
 
+  const ast = astResult.val
+  if (ast.program.interpreter && ast.program.interpreter.end) {
+    return Ok(ast.program.interpreter.end)
+  }
+
+  if (
+    ast.program.directives &&
+    ast.program.directives[0]?.type === "Directive"
+  ) {
+    return Ok(ast.program.directives[0].end ?? 0)
+  }
+
   return Ok(0)
 }
 
@@ -50,7 +70,6 @@ function getRelativePathToExportsFile(
 
 export function addAutoImports(
   code: string,
-  existingLogImports: string[],
   filePath: string,
   options: LogsPluginOptions = {}
 ) {
@@ -64,28 +83,50 @@ export function addAutoImports(
   // Required imports
   const requiredImports = findRequiredImports(code)
 
-  // @todo: make sure that  `./logging` resolves to the correct logging
-  // write some utility functions that help resolving it
-
-  // basically we need some -> getRelativeImportPathForLogging
-  // which if we have `/` root and logging there, and we're in
-  // /src/app/api/route.ts -> then it returns ../../logging
-
-  const relativePath = getRelativePathToExportsFile(
+  const relativeExportsPath = getRelativePathToExportsFile(
     filePath,
     options.exportsFilePath,
     options.packageJsonDirPath
   )
-  console.log("RELATIVE ", relativePath)
+  const relativeExportsPathNormalized = join(
+    dirname(relativeExportsPath),
+    basename(relativeExportsPath, extname(relativeExportsPath))
+  )
 
-  const xa = imports
+  const functionsImportedFromLoggingFile = imports
     .map((staticImport) => parseStaticImport(staticImport))
-    .filter((parsedImport) => parsedImport.specifier === "./logging")
+    .filter(
+      (parsedImport) =>
+        normalize(parsedImport.specifier) === relativeExportsPathNormalized
+    )
+    .map((filteredImport) => filteredImport.namedImports)
+    .filter(Boolean)
+    .reduce((acc, curr) => {
+      const currValues = []
+      for (const [importedFunction] of Object.entries(curr!)) {
+        currValues.push(importedFunction)
+      }
+      return [...acc, ...currValues]
+    }, [] as string[])
 
-  console.log("XA ")
-  console.log(xa)
+  const functionsToAutoImport = requiredImports.filter(
+    (requiredImport) =>
+      !functionsImportedFromLoggingFile.includes(requiredImport)
+  )
 
-  // const parsed = parseStaticImport(imports[0])
+  // Add imports
+  if (functionsToAutoImport.length > 0) {
+    s.appendLeft(
+      startingIndexRes.val,
+      `import { ${Array.from(functionsToAutoImport).join(
+        ", "
+      )} } from "${format({
+        dir: dirname(relativeExportsPath),
+        name: basename(relativeExportsPath, extname(relativeExportsPath)),
+        ext: "",
+      })}";\n`
+    )
+  }
 
   return Ok({
     code: s.toString(),
