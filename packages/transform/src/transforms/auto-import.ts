@@ -85,6 +85,13 @@ export function addAutoImports(
 
   const s = new MagicString(code, { filename: extname(filePath) })
 
+  if (code.includes("createFlytrapLogger")) {
+    return Ok({
+      code: s.toString(),
+      map: s.generateMap()
+    })
+  }
+
   const imports = findStaticImports(code)
 
   // Required imports

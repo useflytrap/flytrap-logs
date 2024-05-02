@@ -1,15 +1,6 @@
 import { describe } from "vitest"
 import { createDescribe, createErrorDescribe } from "./test-utils"
 
-// test for all the rest of `core/index.ts`
-
-// implementation:
-
-// run after the code transform, look at what code is being used ()??
-// maybe we can just some like code.includes("parseJson") etc?
-// - look at what exports it has
-// - add the missing ones
-
 const autoImportCoreFunctionCases = [
   [
     `req.json()`,
@@ -172,20 +163,17 @@ describe("Auto importing", () => {
     { autoImports: true }
   )
   createDescribe(
-    "Auto-imports — custom logging file path",
-    [
-      [
-        `auto-imports from correct relative path (custom logging file location)`,
-        `"use server";
-        export function foo() {}`,
-        `"use server";
-        import { catchUncaughtAction } from "../lib/logging"
-        export const foo = catchUncaughtAction(function foo() {}, {
-          path: "/src/actions/actions.ts/foo"
-        })`,
-        "/src/actions/actions.ts",
-      ],
-    ],
+    "Auto-imports — custom logging file path", [[
+      `auto-imports from correct relative path (custom logging file location)`,
+      `"use server";
+      export function foo() {}`,
+      `"use server";
+      import { catchUncaughtAction } from "../lib/logging"
+      export const foo = catchUncaughtAction(function foo() {}, {
+        path: "/src/actions/actions.ts/foo"
+      })`,
+      "/src/actions/actions.ts",
+    ]],
     {
       exportsFilePath: "./src/lib/logging.ts",
       autoImports: true,
@@ -194,6 +182,55 @@ describe("Auto importing", () => {
   createDescribe(
     "Auto-imports — adds to user defined imports",
     addsToUserDefinedImports,
+    { autoImports: true }
+  )
+  createDescribe(
+    "Auto-imports — doesn't try to auto-import in the logging file itself", [[
+      `doesn't auto-import in the logging.ts file`,
+      `import { createFlytrapLogger } from "@useflytrap/logs";
+
+      export const {
+        getContext,
+        addContext,
+        flushAsync,
+        flush,
+        catchUncaughtAction,
+        catchUncaughtRoute,
+        parseJson,
+        parseText,
+        response,
+        nextResponse,
+        json,
+        nextJson,
+        redirect,
+        nextRedirect
+      } = createFlytrapLogger({
+        flushMethod: 'stdout',
+      });
+      `,
+      `import { createFlytrapLogger } from "@useflytrap/logs";
+
+      export const {
+        getContext,
+        addContext,
+        flushAsync,
+        flush,
+        catchUncaughtAction,
+        catchUncaughtRoute,
+        parseJson,
+        parseText,
+        response,
+        nextResponse,
+        json,
+        nextJson,
+        redirect,
+        nextRedirect
+      } = createFlytrapLogger({
+        flushMethod: 'stdout',
+      });
+      `,
+      '/logging.js'
+    ]],
     { autoImports: true }
   )
   createErrorDescribe("Auto-imports — error cases", autoImportErrorCases, {
