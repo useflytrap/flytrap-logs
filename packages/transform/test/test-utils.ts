@@ -60,7 +60,7 @@ export function createErrorDescribe(
 
   describe(name, () => {
     for (let i = 0; i < testCases.length; i++) {
-      const [fixtureName, fixture, filepath = ""] = testCases[i]
+      const [fixtureName, fixture, filepath = "/file.ts"] = testCases[i]
       it(fixtureName, () => {
         expect(() => {
           // @ts-expect-error: unplugin needs binding, but it's not necessary for tests

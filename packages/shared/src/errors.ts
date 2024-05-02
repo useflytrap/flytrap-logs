@@ -63,6 +63,14 @@ export const createError = createHumanLogs({
         error: "",
       },
     },
+    invalid_core_imports: {
+      template:
+        "because there are invalid imports for the core function(s) {coreFunctionNames}. Flytrap Logs SDK functions should only be imported from your logging file, which is defined as `{loggingFilePath}` according to your configuration.",
+      params: {
+        coreFunctionNames: "",
+        loggingFilePath: "",
+      },
+    },
 
     // Config error explanations
     encrypting_required_keys: {
@@ -181,6 +189,10 @@ export const createError = createHumanLogs({
           href: "https://docs.useflytrap.com/",
         },
       ],
+    },
+    remove_invalid_imports: {
+      template: "Please remove the invalid imports to fix this error.",
+      params: {},
     },
 
     // Config solutions

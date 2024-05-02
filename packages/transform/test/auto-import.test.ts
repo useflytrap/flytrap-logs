@@ -68,9 +68,11 @@ const addsToUserDefinedImports = [
     import { addContext } from "./logging"
     export function foo() {}`,
     `"use server";
-    import { addContext } from "./logging"
     import { catchUncaughtAction } from "./logging"
-    export const foo = catchUncaughtAction(function foo() {})`,
+    import { addContext } from "./logging"
+    export const foo = catchUncaughtAction(function foo() {}, {
+      path: "/file.ts/foo"
+    })`,
   ],
 ]
 
@@ -117,7 +119,9 @@ export const autoImportRelativePathCases = [
     export function foo() {}`,
     `"use server";
     import { catchUncaughtAction } from "../../logging"
-    export const foo = catchUncaughtAction(function foo() {})`,
+    export const foo = catchUncaughtAction(function foo() {}, {
+      path: "/src/actions/actions.ts/foo"
+    })`,
     "/src/actions/actions.ts",
   ],
   [
@@ -126,17 +130,10 @@ export const autoImportRelativePathCases = [
     export function foo() {}`,
     `"use server";
     import { catchUncaughtAction } from "../logging"
-    export const foo = catchUncaughtAction(function foo() {})`,
+    export const foo = catchUncaughtAction(function foo() {}, {
+      path: "/actions/actions.ts/foo"
+    })`,
     "/actions/actions.ts",
-  ],
-  [
-    `auto-imports from correct relative path (custom logging file location)`,
-    `"use server";
-    export function foo() {}`,
-    `"use server";
-    import { catchUncaughtAction } from "../lib/logging"
-    export const foo = catchUncaughtAction(function foo() {})`,
-    "/src/actions/actions.ts",
   ],
 ]
 
@@ -146,11 +143,14 @@ export const autoImportErrorCases = [
     `"use server";
     import { catchUncaughtAction } from "../hello"
     export function foo() {}`,
+    "/actions/actions.ts",
   ],
   [
     `reserved function name has been imported from something other than logging.ts`,
-    `import { parseJson } from "../hello"
+    `"use server";
+    import { parseJson } from "../hello"
     x.json()`,
+    "/actions/actions.ts",
   ],
 ]
 
@@ -172,20 +172,17 @@ describe("Auto importing", () => {
     { autoImports: true }
   )
   createDescribe(
-    "Auto-imports — adds to user defined imports",
-    addsToUserDefinedImports,
-    { autoImports: true }
-  )
-  createDescribe(
     "Auto-imports — custom logging file path",
     [
       [
         `auto-imports from correct relative path (custom logging file location)`,
         `"use server";
-    export function foo() {}`,
+        export function foo() {}`,
         `"use server";
-    import { catchUncaughtAction } from "../lib/logging"
-    export const foo = catchUncaughtAction(function foo() {})`,
+        import { catchUncaughtAction } from "../lib/logging"
+        export const foo = catchUncaughtAction(function foo() {}, {
+          path: "/src/actions/actions.ts/foo"
+        })`,
         "/src/actions/actions.ts",
       ],
     ],
@@ -194,5 +191,12 @@ describe("Auto importing", () => {
       autoImports: true,
     }
   )
-  createErrorDescribe("Auto-imports — error cases", autoImportErrorCases)
+  createDescribe(
+    "Auto-imports — adds to user defined imports",
+    addsToUserDefinedImports,
+    { autoImports: true }
+  )
+  createErrorDescribe("Auto-imports — error cases", autoImportErrorCases, {
+    autoImports: true,
+  })
 })

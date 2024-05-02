@@ -1,8 +1,6 @@
 import type { UnpluginFactory } from "unplugin"
 import { createUnplugin } from "unplugin"
 import type { LogsPluginOptions } from "./types"
-
-import { parse } from "@babel/parser"
 import {
   transformResponse,
   transformResponseInstance,
@@ -152,7 +150,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     }
 
     // Add imports
-    if (options.autoImports !== false) {
+    if (options?.autoImports !== false) {
       return addAutoImports(generatedCode.code, id, options).unwrap()
     }
 

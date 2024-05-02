@@ -1,4 +1,4 @@
-import { Ok } from "ts-results"
+import { Err, Ok } from "ts-results"
 import { parseCode } from "../parser"
 import MagicString from "magic-string"
 import {
@@ -6,6 +6,7 @@ import {
   dirname,
   extname,
   format,
+  isAbsolute,
   join,
   normalize,
   relative,
@@ -13,6 +14,7 @@ import {
 import { findStaticImports, parseStaticImport } from "mlly"
 import { cwd } from "process"
 import { LogsPluginOptions } from "../types"
+import { createError } from "@useflytrap/logs-shared"
 
 const EXPORTED_CORE_FUNCTIONS = [
   "getContext",
@@ -62,9 +64,14 @@ function getRelativePathToExportsFile(
   exportsFilePath?: string,
   packageJsonDirPath?: string
 ) {
+  const normalizedExportsFilePath =
+    exportsFilePath &&
+    (isAbsolute(exportsFilePath)
+      ? exportsFilePath
+      : join(packageJsonDirPath ?? cwd(), exportsFilePath))
   return relative(
     dirname(filePathToResolve),
-    exportsFilePath ?? join(packageJsonDirPath ?? cwd(), "logging.ts")
+    normalizedExportsFilePath ?? join(packageJsonDirPath ?? cwd(), "logging.ts")
   )
 }
 
@@ -82,12 +89,12 @@ export function addAutoImports(
 
   // Required imports
   const requiredImports = findRequiredImports(code)
-
   const relativeExportsPath = getRelativePathToExportsFile(
     filePath,
     options.exportsFilePath,
     options.packageJsonDirPath
   )
+
   const relativeExportsPathNormalized = join(
     dirname(relativeExportsPath),
     basename(relativeExportsPath, extname(relativeExportsPath))
@@ -118,13 +125,60 @@ export function addAutoImports(
   if (functionsToAutoImport.length > 0) {
     s.appendLeft(
       startingIndexRes.val,
-      `import { ${Array.from(functionsToAutoImport).join(
+      `\nimport { ${Array.from(functionsToAutoImport).join(
         ", "
       )} } from "${format({
         dir: dirname(relativeExportsPath),
         name: basename(relativeExportsPath, extname(relativeExportsPath)),
         ext: "",
       })}";\n`
+    )
+  }
+
+  // Make sure that required imports are all imported
+  // from the correct logging.ts file and not somewhere else
+
+  // Make sure there are no duplicate imports for any of the `EXPORTED_CORE_FUNCTIONS`
+  // imports. This can happen if someone accidentally would import a function with the same
+  // name as one of the exported core functions.
+  const exportedCoreFunctionsImportedAfterTransform = findStaticImports(
+    s.toString()
+  )
+    .map((staticImport) => parseStaticImport(staticImport))
+    .map((filteredImport) => filteredImport.namedImports)
+    .filter(Boolean)
+    .reduce((acc, curr) => {
+      const currValues = []
+      for (const [importedFunction] of Object.entries(curr!)) {
+        currValues.push(importedFunction)
+      }
+      return [...acc, ...currValues]
+    }, [] as string[])
+    .filter((importedFunctionName) =>
+      EXPORTED_CORE_FUNCTIONS.includes(importedFunctionName as any)
+    )
+
+  const uniqueCoreImports = Array.from(
+    new Set(exportedCoreFunctionsImportedAfterTransform)
+  )
+
+  if (
+    uniqueCoreImports.length !==
+    exportedCoreFunctionsImportedAfterTransform.length
+  ) {
+    return Err(
+      createError({
+        events: ["transform_failed"],
+        explanations: ["invalid_core_imports"],
+        solutions: ["remove_invalid_imports", "open_issue"],
+        params: {
+          coreFunctionNames: uniqueCoreImports
+            .map((importName) => `\`${importName}\``)
+            .join(", "),
+          filePath,
+          loggingFilePath: relativeExportsPath,
+        },
+      })
     )
   }
 

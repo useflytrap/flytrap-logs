@@ -19,7 +19,7 @@ export function transformResponseInstance(
       name: options.response?.classInstanceName ?? "Response",
     })
   ) {
-    if (options.response.ensureGlobalResponse) {
+    if (options.response?.ensureGlobalResponse) {
       // Ensure 'Response' is the global Web API Response object
       let currentScope = path.scope
       let isShadowed = false
@@ -28,7 +28,7 @@ export function transformResponseInstance(
       while (currentScope) {
         if (
           currentScope.hasOwnBinding(
-            options.response.classInstanceName ?? "Response"
+            options.response?.classInstanceName ?? "Response"
           )
         ) {
           isShadowed = true
@@ -71,7 +71,7 @@ export function transformResponse(
     }) &&
     isIdentifier(path.node.callee.property, { name: "json" })
   ) {
-    if (options.response.ensureGlobalResponse) {
+    if (options.response?.ensureGlobalResponse) {
       // Ensure 'Response' is the global Web API Response object
       let currentScope = path.scope
       let isShadowed = false
@@ -117,7 +117,7 @@ export function transformResponse(
     }) &&
     isIdentifier(path.node.callee.property, { name: "redirect" })
   ) {
-    if (options.response.ensureGlobalResponse) {
+    if (options.response?.ensureGlobalResponse) {
       // Ensure 'Response' is the global Web API Response object
       let currentScope = path.scope
       let isShadowed = false
