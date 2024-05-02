@@ -163,17 +163,20 @@ describe("Auto importing", () => {
     { autoImports: true }
   )
   createDescribe(
-    "Auto-imports — custom logging file path", [[
-      `auto-imports from correct relative path (custom logging file location)`,
-      `"use server";
+    "Auto-imports — custom logging file path",
+    [
+      [
+        `auto-imports from correct relative path (custom logging file location)`,
+        `"use server";
       export function foo() {}`,
-      `"use server";
+        `"use server";
       import { catchUncaughtAction } from "../lib/logging"
       export const foo = catchUncaughtAction(function foo() {}, {
         path: "/src/actions/actions.ts/foo"
       })`,
-      "/src/actions/actions.ts",
-    ]],
+        "/src/actions/actions.ts",
+      ],
+    ],
     {
       exportsFilePath: "./src/lib/logging.ts",
       autoImports: true,
@@ -185,9 +188,11 @@ describe("Auto importing", () => {
     { autoImports: true }
   )
   createDescribe(
-    "Auto-imports — doesn't try to auto-import in the logging file itself", [[
-      `doesn't auto-import in the logging.ts file`,
-      `import { createFlytrapLogger } from "@useflytrap/logs";
+    "Auto-imports — doesn't try to auto-import in the logging file itself",
+    [
+      [
+        `doesn't auto-import in the logging.ts file`,
+        `import { createFlytrapLogger } from "@useflytrap/logs";
 
       export const {
         getContext,
@@ -208,7 +213,7 @@ describe("Auto importing", () => {
         flushMethod: 'stdout',
       });
       `,
-      `import { createFlytrapLogger } from "@useflytrap/logs";
+        `import { createFlytrapLogger } from "@useflytrap/logs";
 
       export const {
         getContext,
@@ -229,8 +234,9 @@ describe("Auto importing", () => {
         flushMethod: 'stdout',
       });
       `,
-      '/logging.js'
-    ]],
+        "/logging.js",
+      ],
+    ],
     { autoImports: true }
   )
   createErrorDescribe("Auto-imports — error cases", autoImportErrorCases, {

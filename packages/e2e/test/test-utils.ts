@@ -1,4 +1,5 @@
 import { Page } from "@playwright/test"
+import type { Log } from "@useflytrap/logs"
 import { execa } from "execa"
 import { readFileSync, writeFileSync } from "fs"
 import { copy } from "fs-extra"
@@ -80,4 +81,28 @@ export async function getNextConsoleLogs(page: Page) {
   )
 
   return consoleLogJsonValues.join("\n")
+}
+
+const requiredKeys = [
+  "method",
+  "type",
+  "path",
+  "req",
+  "req_headers",
+  "res",
+  "res_headers",
+  "http_status",
+  "duration",
+]
+
+export function parseLogOrUndefined(input: string): Log<object> | undefined {
+  try {
+    const parsedObject = JSON.parse(String(input))
+    if (Object.keys(parsedObject).every((key) => requiredKeys.includes(key))) {
+      return parsedObject as Log<object>
+    }
+    return undefined
+  } catch {
+    return undefined
+  }
 }

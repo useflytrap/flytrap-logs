@@ -22,11 +22,12 @@ export type NextTestOptions = {
   debug?: boolean
   production?: boolean
   skipTempdirCleanup?: boolean
+  onServerLog?: (log: string) => void
 } & Pick<PackageJson.PackageJsonStandard, "dependencies">
 
 export function createNextTest({
   path,
-  timeout = ms("1 minute"),
+  timeout = ms("1 minute") as number,
   port = 3000,
   dependencies,
   showStdout = false,
@@ -35,6 +36,7 @@ export function createNextTest({
   debug,
   production,
   skipTempdirCleanup,
+  onServerLog,
 }: NextTestOptions) {
   let serverProcess: ExecaChildProcess<string> | undefined
   let tempTestPath: string | undefined
@@ -98,14 +100,14 @@ export function createNextTest({
       console.log(`${idOr(id)} Started server`)
     }
 
-    if (true) {
-      serverProcess.stdout?.on("data", (data: Buffer | string) =>
-        console.log(idOr(id), data.toString())
-      )
-      serverProcess.stderr?.on("data", (data: Buffer | string) =>
-        console.error(idOr(id), data.toString())
-      )
-    }
+    serverProcess.stdout?.on("data", (data: Buffer | string) => {
+      if (showStdout) console.log(idOr(id), data.toString())
+      onServerLog?.(data.toString())
+    })
+    serverProcess.stderr?.on("data", (data: Buffer | string) => {
+      if (showStdout) console.error(idOr(id), data.toString())
+      onServerLog?.(data.toString())
+    })
 
     await new Promise<undefined>((resolve) => {
       serverProcess?.stdout?.on("data", (data: string | Buffer) => {

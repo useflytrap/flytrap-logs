@@ -88,7 +88,7 @@ export function addAutoImports(
   if (code.includes("createFlytrapLogger")) {
     return Ok({
       code: s.toString(),
-      map: s.generateMap()
+      map: s.generateMap(),
     })
   }
 

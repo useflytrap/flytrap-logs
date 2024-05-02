@@ -1,6 +1,13 @@
 import { join } from "path"
-import { createNextTest } from "../fixture"
-import { getDirname, getNextConsoleLogs } from "../test-utils"
+import { createNextTest, expect } from "../fixture"
+import {
+  getDirname,
+  getNextConsoleLogs,
+  parseLogOrUndefined,
+} from "../test-utils"
+import type { Log } from "@useflytrap/logs"
+
+const jsonLogs: Log<object>[] = []
 
 const { test } = createNextTest({
   path: join(getDirname(import.meta.url), "app"),
@@ -26,6 +33,12 @@ const { test } = createNextTest({
       )}`,
     },
   }),
+  onServerLog(log) {
+    const parsedLog = parseLogOrUndefined(log)
+    if (parsedLog) {
+      jsonLogs.push(parsedLog)
+    }
+  },
 })
 
 test.describe("Server Actions", () => {
@@ -37,11 +50,17 @@ test.describe("Server Actions", () => {
     // Click the button
     await page.getByRole("button", { name: "Send JSON" }).click()
 
-    const logs = await getNextConsoleLogs(page)
-    console.log("LOGS: ")
-    console.log(logs)
-
-    // Check that the log was output to stdout
+    await getNextConsoleLogs(page)
+    expect(jsonLogs[0].res).toStrictEqual({
+      hello: "world",
+    })
+    expect(jsonLogs[0].req).toStrictEqual([
+      {
+        foo: "bar",
+      },
+    ])
+    expect(jsonLogs[0].method).toBe("GET")
+    expect(jsonLogs[0].type).toBe("action")
   })
 
   // @todo: here we need tests for all accepted values for Server Actions
