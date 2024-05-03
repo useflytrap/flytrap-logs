@@ -7,7 +7,7 @@ import babelGenerate from "@babel/generator"
  * @returns the correct traverse function
  */
 export function _babelInterop<T>(fn: T): T {
-  // @ts-ignore
+  // @ts-expect-error: depends on bundler behavior if the export is `default` or just `fn`
   return fn.default ?? fn
 }
 

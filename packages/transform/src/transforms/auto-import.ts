@@ -31,7 +31,7 @@ const EXPORTED_CORE_FUNCTIONS = [
   "nextJson",
   "redirect",
   "nextRedirect",
-] as const
+]
 
 function findImportStartingIndex(code: string, filePath: string) {
   const astResult = parseCode(code, filePath)
@@ -162,7 +162,7 @@ export function addAutoImports(
       return [...acc, ...currValues]
     }, [] as string[])
     .filter((importedFunctionName) =>
-      EXPORTED_CORE_FUNCTIONS.includes(importedFunctionName as any)
+      EXPORTED_CORE_FUNCTIONS.includes(importedFunctionName)
     )
 
   const uniqueCoreImports = Array.from(
