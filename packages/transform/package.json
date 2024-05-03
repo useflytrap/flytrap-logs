@@ -36,13 +36,14 @@
     "test:coverage": "vitest run --coverage",
     "lint": "pnpm eslint --fix \"{src,test}/**/*.{js,json,ts}\"",
     "prepublishOnly": "pnpm lint",
-    "release": "node scripts/patch-package.js patch && np ; node scripts/patch-package.js unpatch"
+    "release": "node scripts/patch-package.js patch && np --no-tests ; node scripts/patch-package.js unpatch"
   },
   "dependencies": {
     "@babel/generator": "^7.24.4",
     "@babel/parser": "^7.24.4",
     "@babel/traverse": "^7.24.1",
     "@babel/types": "^7.24.0",
+    "@useflytrap/logs-shared": "workspace:*",
     "diff": "^5.2.0",
     "human-logs": "^0.4.1",
     "magic-string": "^0.30.10",
