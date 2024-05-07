@@ -207,6 +207,17 @@ Try making a request, and you should see requests & server actions get logged in
 
 If you want automatically set-up dashboards for your Route Handlers, Server Actions that look like this 👇, you can integrate our Logs SDK with the Flytrap Logs Dashboard.
 
+| | | |
+|:-------------------------:|:-------------------------:|:-------------------------:|
+|<img width="1604" alt="Flytrap Logs Dashboard" src="./docs/overview-narrow.png"> |  <img width="1604" alt="Flytrap Logs Search" src="./docs/logs-search.png">|<img width="1604" alt="Route Handler Request" src="./docs/route-handler.png">|
+|<img width="1604" alt="Request with an error" src="./docs/server-action-error.png">  |  <img width="1604" alt="Server Action request" src="./docs/server-action.png">||
+||||
+
+1. Sign up on [Flytrap](https://www.useflytrap.com/register)
+2. Create a project, select the "Logs" product during the onboarding
+3. Create your `logging.ts` file, and add the `publicKey` from your onboarding there.
+4. Set the `flushMethod` in your `logging.ts` file to `'api'`
+
 ## 💻 Development
 
 - Clone this repository
