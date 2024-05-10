@@ -11,9 +11,9 @@ const serverActionDirectiveCases = [
     
     export const foo = catchUncaughtAction(async function foo() {
     }, {
-      path: "@/lib/actions.ts/foo"
+      path: "lib/actions.ts/foo"
     })`,
-    `@/lib/actions.ts`,
+    `/lib/actions.ts`,
   ],
   [
     `doesn't transform files without "use server" directive at the top`,
@@ -55,9 +55,9 @@ const serverActionTransformOnlyExportsCases = [
     export const foo = () => {}`,
     `"use server"
     export const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions.ts/foo"
+      path: "lib/actions.ts/foo"
     })`,
-    `@/lib/actions.ts`,
+    `/lib/actions.ts`,
   ],
   [
     `transforms exported function declaration (default export)`,
@@ -65,10 +65,10 @@ const serverActionTransformOnlyExportsCases = [
     export default function foo() {}`,
     `"use server"
     const foo = catchUncaughtAction(function foo() {}, {
-      path: "@/lib/actions.ts/foo"
+      path: "lib/actions.ts/foo"
     })
     export default foo`,
-    `@/lib/actions.ts`,
+    `/lib/actions.ts`,
   ],
   [
     `transforms exported function expression (default export)`,
@@ -77,10 +77,10 @@ const serverActionTransformOnlyExportsCases = [
     export default foo`,
     `"use server"
     const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions.ts/foo"
+      path: "lib/actions.ts/foo"
     })
     export default foo`,
-    `@/lib/actions.ts`,
+    `/lib/actions.ts`,
   ],
   [
     `transforms exported function expression (late export)`,
@@ -89,10 +89,10 @@ const serverActionTransformOnlyExportsCases = [
     export { foo }`,
     `"use server"
     const foo = catchUncaughtAction(() => {}, {
-      path: "@/lib/actions.ts/foo"
+      path: "lib/actions.ts/foo"
     })
     export { foo }`,
-    `@/lib/actions.ts`,
+    `/lib/actions.ts`,
   ],
   [
     `doesn't transform private function`,
@@ -166,5 +166,25 @@ describe("Server Action transforms", () => {
   createDescribe(
     "Server Actions — function declaration hoisting success cases",
     serverActionHoistingSuccessCases
+  )
+  createDescribe(
+    "Server Actions — path is relative to package.json dir",
+    [
+      [
+        "path is relative to pacakge.json dir",
+        `"use server"
+        const foo = () => {}
+        export { foo }`,
+        `"use server"
+        const foo = catchUncaughtAction(() => {}, {
+          path: "src/lib/actions.ts/foo"
+        })
+        export { foo }`,
+        "/root/usr/my_package/src/lib/actions.ts",
+      ],
+    ],
+    {
+      packageJsonDirPath: "/root/usr/my_package",
+    }
   )
 })

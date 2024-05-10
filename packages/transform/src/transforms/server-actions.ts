@@ -23,6 +23,8 @@ import type { NodePath } from "@babel/traverse"
 import { Err, Ok } from "ts-results"
 import { createError } from "@useflytrap/logs-shared"
 import { generate } from "../import-utils"
+import { filePathRelativeToPackageJsonDir } from "../path-utils"
+import { cwd } from "process"
 
 function hasServerDirective(
   path: NodePath<
@@ -42,12 +44,21 @@ function hasServerDirective(
 export function createCatchUncaughtAction(
   funcNode: ArrowFunctionExpression | FunctionExpression,
   name: string,
-  filepath: string
+  filepath: string,
+  packageJsonDirPath?: string
 ) {
   return callExpression(identifier("catchUncaughtAction"), [
     funcNode,
     objectExpression([
-      objectProperty(identifier("path"), stringLiteral(`${filepath}/${name}`)),
+      objectProperty(
+        identifier("path"),
+        stringLiteral(
+          `${filePathRelativeToPackageJsonDir(
+            filepath,
+            packageJsonDirPath ?? cwd()
+          )}/${name}`
+        )
+      ),
     ]),
   ])
 }
@@ -111,7 +122,12 @@ export function transformFunctions(
           return unallowedSyntax
         }
 
-        const wrapper = createCatchUncaughtAction(path.node, name, filepath)
+        const wrapper = createCatchUncaughtAction(
+          path.node,
+          name,
+          filepath,
+          options.packageJsonDirPath
+        )
         path.replaceWith(wrapper)
       }
     }
@@ -156,7 +172,8 @@ export function transformFunctionDeclaration(
       const wrapper = createCatchUncaughtAction(
         funcNode,
         path.node.id.name,
-        filepath
+        filepath,
+        options.packageJsonDirPath
       )
 
       if (isExportDefaultDeclaration(path.parent)) {

@@ -20,6 +20,8 @@ import type { NodePath } from "@babel/traverse"
 import { Err, Ok } from "ts-results"
 import { createError } from "@useflytrap/logs-shared"
 import { generate } from "../import-utils"
+import { filePathRelativeToPackageJsonDir } from "../path-utils"
+import { cwd } from "process"
 
 const ROUTE_HANDLER_METHODS = [
   "GET",
@@ -35,12 +37,21 @@ export function createCatchUncaughtRoute(
   funcNode: ArrowFunctionExpression | FunctionExpression,
   name: string,
   method: string,
-  filepath: string
+  filepath: string,
+  packageJsonDirPath?: string
 ) {
   return callExpression(identifier("catchUncaughtRoute"), [
     funcNode,
     objectExpression([
-      objectProperty(identifier("path"), stringLiteral(`${filepath}`)),
+      objectProperty(
+        identifier("path"),
+        stringLiteral(
+          filePathRelativeToPackageJsonDir(
+            filepath,
+            packageJsonDirPath ?? cwd()
+          )
+        )
+      ),
       objectProperty(identifier("method"), stringLiteral(method)),
     ]),
   ])
@@ -105,7 +116,8 @@ export function transformRouteFunctions(
           path.node,
           name,
           name,
-          filepath
+          filepath,
+          options.packageJsonDirPath
         )
         path.replaceWith(wrapper)
       }
@@ -149,7 +161,8 @@ export function transformRouteFunctionDeclaration(
         funcNode,
         path.node.id.name,
         path.node.id.name,
-        filepath
+        filepath,
+        options.packageJsonDirPath
       )
 
       if (isExportDefaultDeclaration(path.parent)) {
