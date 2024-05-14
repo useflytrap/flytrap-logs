@@ -197,7 +197,6 @@ export function catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
       })
       const res = await fn(...args)
       addContext({ res })
-      addContext({ http_status: 200 })
       addContext({
         duration: Date.now() - t0,
       })
