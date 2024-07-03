@@ -72,6 +72,9 @@ export type FlytrapLogsOptions<T extends object> = {
   vercel?: {
     enabled?: boolean
     /**
+     * By default, large logs are sent via the API, instead of stdout. This is because Vercel limits stdout at 4KB, which means that we
+     * would lose information for larger captures, that we would push through stdout.
+     *
      * @default true
      */
     sendLargeLogsToApi?: boolean
@@ -79,12 +82,14 @@ export type FlytrapLogsOptions<T extends object> = {
 
   encryption?: {
     /**
-     * Enable encryption for your log data. By default, only keys @TODO are encrypted. You can define which keys get encrypted
+     * Enable encryption for your log data. By default, only keys `req`, `req_headers`, `res`, `res_headers`, `error` are encrypted. You can define which keys get encrypted
      * by using the `encryptKeys` option.
      */
     enabled?: boolean
     /**
-     * Define which keys of the log object should be encrypted with the public key.
+     * Define which keys of the log object should be encrypted with the public key. All sensitive values are encrypted by default (responses, headers, requests, errors)
+     *
+     * @default ["req", "req_headers", "res", "res_headers", "error"]
      */
     encryptKeys?: (keyof Log<T>)[]
   }
@@ -141,7 +146,7 @@ export function validateConfig<T extends object>({
 export function createFlytrapLogger<T extends object>({
   format = "json",
   flushMethod = "api",
-  logsEndpoint = "https://flytrap-production.up.railway.app/api/v1/logs/raw",
+  logsEndpoint = "https://logs.useflytrap,com/api/v1/logs/raw",
   publicKey,
   vercel,
   encryption,
