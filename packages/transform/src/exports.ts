@@ -25,6 +25,7 @@ export const rspack = createRspackPlugin(unpluginFactory)
 
 // Helper export for Next.js
 export const nextjs = (options: LogsPluginOptions) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (config: any) => {
     config.plugins = config.plugins ?? []
     // This is here to disable the annoying logs from webpack
