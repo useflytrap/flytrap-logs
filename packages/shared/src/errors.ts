@@ -168,6 +168,17 @@ export const createError = createHumanLogs({
         },
       ],
     },
+    disable_hoist_checker: {
+      template:
+        " If you want to disable hoist checking for the code-transform, pass in `hoistChecker`: false to your Flytrap Logs plugin configuration. Beware that this might cause run-time errors.",
+      params: {},
+      actions: [
+        {
+          text: "Read the Flytrap Logs plugin docs",
+          href: "https://docs.useflytrap.com/",
+        },
+      ],
+    },
     disable_diffs: {
       template:
         "If you want to disable diffing for the code-transform, pass in `diffs`: false to your Flytrap Logs plugin configuration.",

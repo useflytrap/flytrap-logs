@@ -62,7 +62,7 @@ const addsToUserDefinedImports = [
     import { catchUncaughtAction } from "./logging"
     import { addContext } from "./logging"
     export const foo = catchUncaughtAction(function foo() {}, {
-      path: "/file.ts/foo"
+      path: "file.ts/foo"
     })`,
   ],
 ]
@@ -75,7 +75,7 @@ const serverActionAutoImportCases = [
     `"use server";
     import { catchUncaughtAction } from "./logging"
     export const foo = catchUncaughtAction(function foo() {}, {
-      path: "/file.ts/foo"
+      path: "file.ts/foo"
     })`,
   ],
 ]
@@ -89,7 +89,7 @@ const noDoubleImports = [
     `"use server";
     import { catchUncaughtAction } from "./logging"
     export const foo = catchUncaughtAction(function foo() {}, {
-      path: "/file.ts/foo"
+      path: "file.ts/foo"
     })`,
   ],
   [
@@ -111,7 +111,7 @@ export const autoImportRelativePathCases = [
     `"use server";
     import { catchUncaughtAction } from "../../logging"
     export const foo = catchUncaughtAction(function foo() {}, {
-      path: "/src/actions/actions.ts/foo"
+      path: "src/actions/actions.ts/foo"
     })`,
     "/src/actions/actions.ts",
   ],
@@ -122,7 +122,7 @@ export const autoImportRelativePathCases = [
     `"use server";
     import { catchUncaughtAction } from "../logging"
     export const foo = catchUncaughtAction(function foo() {}, {
-      path: "/actions/actions.ts/foo"
+      path: "actions/actions.ts/foo"
     })`,
     "/actions/actions.ts",
   ],
@@ -172,7 +172,7 @@ describe("Auto importing", () => {
         `"use server";
       import { catchUncaughtAction } from "../lib/logging"
       export const foo = catchUncaughtAction(function foo() {}, {
-        path: "/src/actions/actions.ts/foo"
+        path: "src/actions/actions.ts/foo"
       })`,
         "/src/actions/actions.ts",
       ],

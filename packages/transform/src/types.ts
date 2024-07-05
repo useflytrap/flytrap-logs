@@ -33,6 +33,7 @@ export type LogsPluginOptions = {
   babel?: {
     parserOptions?: ParserOptions
   }
+  hoistChecker?: boolean
   packageJsonDirPath?: string
   diffs?: boolean
   exportsFilePath?: string
@@ -63,4 +64,10 @@ export interface ParseErrorSpecification<ErrorDetails = unknown> extends Error {
   missingPlugin?: string | string[]
   loc: Position
   details: ErrorDetails
+}
+
+export type DefinitionLocation = {
+  name: string
+  index: number
+  line?: number
 }

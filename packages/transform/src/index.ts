@@ -65,6 +65,11 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       })
       .filter(Boolean) as string[]
 
+    // Hoist checker
+    if (options?.hoistChecker !== false) {
+      hoistChecker(code, id).unwrap()
+    }
+
     // Parse the code into an AST
     const ast = parseCode(code, id, options?.babel?.parserOptions).unwrap()
 
@@ -136,9 +141,6 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     })
 
     const generatedCode = generate(ast, {}, code)
-
-    // Hoist checker
-    hoistChecker(generatedCode.code, id).unwrap()
 
     // Write diffs
     if (options?.diffs !== false) {

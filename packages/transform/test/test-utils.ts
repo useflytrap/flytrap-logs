@@ -4,6 +4,7 @@ import generate from "@babel/generator"
 import { unpluginFactory } from "../src"
 import { UnpluginOptions } from "unplugin"
 import { LogsPluginOptions } from "../src/types"
+import { parseCode } from "../src/parser"
 
 export function createDescribe(
   name: string,
@@ -30,8 +31,8 @@ export function createDescribe(
         // @ts-expect-error: unplugin needs binding, but it's not necessary for tests
         const transformedCode = mockPlugin.transform!(fixture, filepath)!.code
 
-        const transformedAst = parse(transformedCode, { sourceType: "module" })
-        const targetAst = parse(target, { sourceType: "module" })
+        const transformedAst = parseCode(transformedCode).unwrap()
+        const targetAst = parseCode(target).unwrap()
 
         expect(generate(transformedAst, {}, fixture).code).toBe(
           generate(targetAst, {}, target).code

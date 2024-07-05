@@ -1,5 +1,8 @@
 import { describe } from "vitest"
 import { createDescribe, createErrorDescribe } from "./test-utils"
+import { parseCode } from "../src/parser"
+import { traverse } from "../src/import-utils"
+import { hoistChecker } from "../src/transforms/hoist-checker"
 
 const serverActionDirectiveCases = [
   [
@@ -150,7 +153,23 @@ const serverActionHoistingSuccessCases = [
     c()
     var c = () => {}`,
   ],
+  [
+    `doesn't error for non-transformed functions`,
+    `"use server"
+    foo()
+    function foo() {}
+    export function bar() {}`,
+    `"use server"
+    foo()
+    function foo() {}
+    export const bar = catchUncaughtAction(function bar() {}, {
+      path: "file.ts/bar"
+    })`,
+  ],
 ]
+
+// @todo: hoist checker accepted test case for
+// server action functions that DONT get transformed (non-exported functions).
 
 describe("Server Action transforms", () => {
   createDescribe("Server Actions — directives", serverActionDirectiveCases)
