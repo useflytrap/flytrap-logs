@@ -164,7 +164,7 @@ export const createError = createHumanLogs({
       actions: [
         {
           text: "Open an issue on GitHub",
-          href: "https://www.github.com",
+          href: "https://github.com/useflytrap/flytrap-logs/issues/new?assignees=skoshx&labels=bug&projects=&template=---bug-report.yml",
         },
       ],
     },
@@ -229,7 +229,7 @@ export const createError = createHumanLogs({
       actions: [
         {
           text: "Open an issue",
-          href: "https://github.com/useflytrap/flytrap-js/issues/new?assignees=skoshx&labels=bug&projects=&template=---bug-report.yml",
+          href: "https://github.com/useflytrap/flytrap-logs/issues/new?assignees=skoshx&labels=bug&projects=&template=---bug-report.yml",
         },
       ],
     },
