@@ -146,7 +146,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     if (options?.diffs !== false) {
       writeDiff(
         options?.packageJsonDirPath ?? cwd(),
-        basename(id),
+        id,
         code,
         generatedCode.code
       ).unwrap()
