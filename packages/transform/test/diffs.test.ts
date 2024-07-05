@@ -1,7 +1,7 @@
 import { describe, it, expect, afterAll } from "vitest"
 import { writeDiff } from "../src/diff"
 import { join } from "path"
-import { readFileSync, rmSync, rmdirSync } from "fs"
+import { readFileSync, rmSync } from "fs"
 
 const expectedDiff = `Index: src/api/webhooks/route.ts
 ===================================================================
