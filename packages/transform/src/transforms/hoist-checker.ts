@@ -1,8 +1,4 @@
-import {
-  functionDeclaration,
-  isIdentifier,
-  isVariableDeclaration,
-} from "@babel/types"
+import { isIdentifier } from "@babel/types"
 import { createError } from "@useflytrap/logs-shared"
 import { Err, Ok } from "ts-results"
 import { traverse } from "../import-utils"
@@ -27,8 +23,6 @@ export function hoistChecker(
 
   traverse(ast, {
     FunctionDeclaration(path) {
-      // @todo: only check exported functions ?
-      // @todo: maybe also
       if (
         isIdentifier(path.node.id) &&
         ["ExportNamedDeclaration", "ExportDefaultDeclaration"].includes(

@@ -1,8 +1,5 @@
 import { describe } from "vitest"
 import { createDescribe, createErrorDescribe } from "./test-utils"
-import { parseCode } from "../src/parser"
-import { traverse } from "../src/import-utils"
-import { hoistChecker } from "../src/transforms/hoist-checker"
 
 const serverActionDirectiveCases = [
   [

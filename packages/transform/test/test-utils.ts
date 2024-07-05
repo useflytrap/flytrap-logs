@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { parse } from "@babel/parser"
 import generate from "@babel/generator"
 import { unpluginFactory } from "../src"
 import { UnpluginOptions } from "unplugin"
