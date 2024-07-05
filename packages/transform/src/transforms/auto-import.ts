@@ -16,6 +16,10 @@ import { cwd } from "process"
 import { LogsPluginOptions } from "../types"
 import { createError } from "@useflytrap/logs-shared"
 
+export const DEFAULT_IMPORT_ALIASES = [
+  ["@/", "./"],
+  ["~/", "./"],
+]
 const EXPORTED_CORE_FUNCTIONS = [
   "getContext",
   "addContext",
@@ -78,12 +82,13 @@ function getRelativePathToExportsFile(
 export function addAutoImports(
   code: string,
   filePath: string,
+  importAliases: string[][] = DEFAULT_IMPORT_ALIASES,
   options: LogsPluginOptions = {}
 ) {
   const startingIndexRes = findImportStartingIndex(code, filePath)
   if (startingIndexRes.err) return startingIndexRes
 
-  const s = new MagicString(code, { filename: extname(filePath) })
+  const s = new MagicString(code, { filename: filePath })
 
   if (code.includes("createFlytrapLogger")) {
     return Ok({
@@ -109,12 +114,22 @@ export function addAutoImports(
 
   const functionsImportedFromLoggingFile = imports
     .map((staticImport) => parseStaticImport(staticImport))
-    .filter(
-      (parsedImport) =>
-        normalize(parsedImport.specifier) === relativeExportsPathNormalized
-    )
+    .filter((parsedImport) => {
+      if (parsedImport.namedImports === undefined) return false
+
+      return EXPORTED_CORE_FUNCTIONS.some((coreFuncName) => {
+        return Object.keys(parsedImport.namedImports!).includes(coreFuncName)
+      })
+    })
+    .filter((parsedImport) => {
+      // Allow import aliases
+      if (
+        importAliases.some(([alias]) => parsedImport.specifier.includes(alias))
+      )
+        return true
+      return normalize(parsedImport.specifier) === relativeExportsPathNormalized
+    })
     .map((filteredImport) => filteredImport.namedImports)
-    .filter(Boolean)
     .reduce((acc, curr) => {
       const currValues = []
       for (const [importedFunction] of Object.entries(curr!)) {

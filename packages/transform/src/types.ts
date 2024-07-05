@@ -14,6 +14,18 @@ export type LogsPluginOptions = {
     ensureGlobalResponse?: boolean
   }
   next?: {
+    /**
+     * Define a custom import alias that you're using with your Next.js project
+     * By default, import aliases "@/" and "~/" get resolved automatically to the package.json dir or `cwd()`.
+     * @default
+     * ```typescript
+     * [
+     *   ["@/", "./"],
+     *   ["~/", "./"]
+     * ]
+     * ```
+     */
+    importAliases?: string[][]
     serverActions?: boolean
     serverActionsPaths?: string[]
     routeHandlers?: boolean

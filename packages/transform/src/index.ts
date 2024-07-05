@@ -31,7 +31,6 @@ import {
   transformRouteFunctions,
 } from "./transforms/route-handlers"
 import { writeDiff } from "./diff"
-import { basename } from "path"
 import { cwd } from "process"
 import { parseCode } from "./parser"
 import { addAutoImports } from "./transforms/auto-import"
@@ -154,7 +153,12 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
 
     // Add imports
     if (options?.autoImports !== false) {
-      return addAutoImports(generatedCode.code, id, options).unwrap()
+      return addAutoImports(
+        generatedCode.code,
+        id,
+        options?.next?.importAliases,
+        options
+      ).unwrap()
     }
 
     return generatedCode

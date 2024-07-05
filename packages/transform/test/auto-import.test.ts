@@ -145,6 +145,33 @@ export const autoImportErrorCases = [
   ],
 ]
 
+export const autoImportRegressionCases = [
+  [
+    `regression #1: import from @/ import alias`,
+    `import { NextRequest, NextResponse } from "next/server"
+import { addContext } from "@/lib/logging"
+
+export async function POST(request: NextRequest) {
+  const body = await request.text()
+  addContext({ error: 'some-error' })
+  return NextResponse.json(null)
+}`,
+    `import { catchUncaughtRoute, parseText, nextJson } from "../../../../../lib/logging";
+import { NextRequest, NextResponse } from "next/server"
+import { addContext } from "@/lib/logging"
+
+export const POST = catchUncaughtRoute(async function POST(request: NextRequest) {
+  const body = await parseText(request);
+  addContext({ error: 'some-error' })
+  return nextJson(null)
+}, {
+  path: "app/api/v1/webhooks/stripe/route.ts",
+  method: "POST",
+});`,
+    "/app/api/v1/webhooks/stripe/route.ts",
+  ],
+]
+
 describe("Auto importing", () => {
   createDescribe(
     "Auto-imports — core function cases",
@@ -240,6 +267,12 @@ describe("Auto importing", () => {
     { autoImports: true }
   )
   createErrorDescribe("Auto-imports — error cases", autoImportErrorCases, {
+    autoImports: true,
+  })
+
+  // Regressions
+  createDescribe("Auto-imports — regression tests", autoImportRegressionCases, {
+    exportsFilePath: "./lib/logging.ts",
     autoImports: true,
   })
 })
