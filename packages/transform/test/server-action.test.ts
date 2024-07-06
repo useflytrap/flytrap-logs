@@ -9,7 +9,7 @@ const serverActionDirectiveCases = [
     export async function foo() {}`,
     `"use server"
     
-    export const foo = catchUncaughtAction(async function foo() {
+    export const foo = catchUncaughtAction$1337(async function foo() {
     }, {
       path: "lib/actions.ts/foo"
     })`,
@@ -54,7 +54,7 @@ const serverActionTransformOnlyExportsCases = [
     `"use server"
     export const foo = () => {}`,
     `"use server"
-    export const foo = catchUncaughtAction(() => {}, {
+    export const foo = catchUncaughtAction$1337(() => {}, {
       path: "lib/actions.ts/foo"
     })`,
     `/lib/actions.ts`,
@@ -64,7 +64,7 @@ const serverActionTransformOnlyExportsCases = [
     `"use server"
     export default function foo() {}`,
     `"use server"
-    const foo = catchUncaughtAction(function foo() {}, {
+    const foo = catchUncaughtAction$1337(function foo() {}, {
       path: "lib/actions.ts/foo"
     })
     export default foo`,
@@ -76,7 +76,7 @@ const serverActionTransformOnlyExportsCases = [
     const foo = () => {}
     export default foo`,
     `"use server"
-    const foo = catchUncaughtAction(() => {}, {
+    const foo = catchUncaughtAction$1337(() => {}, {
       path: "lib/actions.ts/foo"
     })
     export default foo`,
@@ -88,7 +88,7 @@ const serverActionTransformOnlyExportsCases = [
     const foo = () => {}
     export { foo }`,
     `"use server"
-    const foo = catchUncaughtAction(() => {}, {
+    const foo = catchUncaughtAction$1337(() => {}, {
       path: "lib/actions.ts/foo"
     })
     export { foo }`,
@@ -159,7 +159,7 @@ const serverActionHoistingSuccessCases = [
     `"use server"
     foo()
     function foo() {}
-    export const bar = catchUncaughtAction(function bar() {}, {
+    export const bar = catchUncaughtAction$1337(function bar() {}, {
       path: "file.ts/bar"
     })`,
   ],
@@ -192,7 +192,7 @@ describe("Server Action transforms", () => {
         const foo = () => {}
         export { foo }`,
         `"use server"
-        const foo = catchUncaughtAction(() => {}, {
+        const foo = catchUncaughtAction$1337(() => {}, {
           path: "src/lib/actions.ts/foo"
         })
         export { foo }`,

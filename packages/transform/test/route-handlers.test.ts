@@ -28,7 +28,7 @@ const routeHandlerTransformOnlyExportsCases = [
   [
     `transforms exported function expression (named export)`,
     `export function GET() {}`,
-    `export const GET = catchUncaughtRoute(function GET() {}, {
+    `export const GET = catchUncaughtRoute$1337(function GET() {}, {
       path: "app/api/route.ts",
       method: "GET",
     })`,
@@ -37,7 +37,7 @@ const routeHandlerTransformOnlyExportsCases = [
   [
     `transforms exported function declaration (default export)`,
     `export default function POST() {}`,
-    `const POST = catchUncaughtRoute(function POST() {}, {
+    `const POST = catchUncaughtRoute$1337(function POST() {}, {
       path: "app/api/route.ts",
       method: "POST"
     })
@@ -48,7 +48,7 @@ const routeHandlerTransformOnlyExportsCases = [
     `transforms exported function expression (default export)`,
     `const PATCH = () => {}
     export default PATCH`,
-    `const PATCH = catchUncaughtRoute(() => {}, {
+    `const PATCH = catchUncaughtRoute$1337(() => {}, {
       path: "app/api/route.ts",
       method: "PATCH",
     })
@@ -59,7 +59,7 @@ const routeHandlerTransformOnlyExportsCases = [
     `transforms exported function expression (late export)`,
     `const DELETE = () => {}
     export { DELETE }`,
-    `const DELETE = catchUncaughtRoute(() => {}, {
+    `const DELETE = catchUncaughtRoute$1337(() => {}, {
       path: "app/api/route.ts",
       method: "DELETE",
     })
@@ -121,7 +121,7 @@ function foo() {}
 export async function GET() {}`,
     `foo()
 function foo() {}
-export const GET = catchUncaughtRoute(async function GET() {}, {
+export const GET = catchUncaughtRoute$1337(async function GET() {}, {
   path: "file.ts",
   method: "GET"
 })`,
