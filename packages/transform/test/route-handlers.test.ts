@@ -126,6 +126,16 @@ export const GET = catchUncaughtRoute$1337(async function GET() {}, {
   method: "GET"
 })`,
   ],
+  [
+    `doesn't error for imported values`,
+    `import { POST as buildHandler } from "@/app/api/v1/builds/route"
+export async function POST(request: NextRequest) {}`,
+    `import { POST as buildHandler } from "@/app/api/v1/builds/route"
+export const POST = catchUncaughtRoute$1337(async function POST(request: NextRequest) {}, {
+  path: "file.ts",
+  method: "POST"
+})`,
+  ],
 ]
 
 describe("Route Handler transforms", () => {

@@ -42,6 +42,7 @@ export function hoistChecker(
     Identifier(path) {
       const name = path.node.name
 
+      if (path.parent.type === "ImportSpecifier") return
       if (path.parent.type === "FunctionDeclaration") return
 
       const matchingFunctionDefinitions = functionsDefs.filter(
