@@ -1,5 +1,5 @@
 import { describe } from "vitest"
-import { createDescribe, createErrorDescribe } from "./test-utils"
+import { createDescribe } from "./test-utils"
 import { getCoreFunctionImportMap } from "../src/transforms/auto-import"
 
 const autoImportCoreFunctionCases = [
