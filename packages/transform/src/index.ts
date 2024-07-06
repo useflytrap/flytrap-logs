@@ -9,6 +9,7 @@ import { transformRequest } from "./transforms/request"
 import { generate, traverse } from "./import-utils"
 
 import {
+  astHasServerDirective,
   transformFunctionDeclaration,
   transformFunctions,
 } from "./transforms/server-actions"
@@ -38,6 +39,7 @@ import {
   getCoreFunctionImportMap,
 } from "./transforms/auto-import"
 import { isNodesEquivalent } from "@babel/types"
+import { basename } from "path"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options = {}
@@ -75,6 +77,15 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       id,
       options?.babel?.parserOptions
     ).unwrap()
+
+    // Make sure it's either a API Route or a Server Action
+    if (
+      basename(id) !== "route.ts" &&
+      astHasServerDirective(ast) === false &&
+      options.onlyServerActionsAndRoutes !== false
+    ) {
+      return { code }
+    }
 
     // Traverse the AST and transform
     traverse(ast, {

@@ -151,12 +151,24 @@ const nextResponseInstanceCases = [
 ]
 
 describe("Response transforms", () => {
-  createDescribe("Response.json", responseJsonCases)
-  createDescribe("NextResponse.json", nextResponseJsonCases)
+  createDescribe("Response.json", responseJsonCases, {
+    onlyServerActionsAndRoutes: false,
+  })
+  createDescribe("NextResponse.json", nextResponseJsonCases, {
+    onlyServerActionsAndRoutes: false,
+  })
 
-  createDescribe("Response.redirect", responseRedirectCases)
-  createDescribe("NextResponse.redirect", nextResponseRedirectCases)
+  createDescribe("Response.redirect", responseRedirectCases, {
+    onlyServerActionsAndRoutes: false,
+  })
+  createDescribe("NextResponse.redirect", nextResponseRedirectCases, {
+    onlyServerActionsAndRoutes: false,
+  })
 
-  createDescribe("new Response", responseInstanceCases)
-  createDescribe("new NextResponse", nextResponseInstanceCases)
+  createDescribe("new Response", responseInstanceCases, {
+    onlyServerActionsAndRoutes: false,
+  })
+  createDescribe("new NextResponse", nextResponseInstanceCases, {
+    onlyServerActionsAndRoutes: false,
+  })
 })

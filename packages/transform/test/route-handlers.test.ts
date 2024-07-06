@@ -15,12 +15,14 @@ const routeHandlerErrorCases = [
     export function GET() {
       this.hello
     }`,
+    "route.ts",
   ],
   [
     `transform errors when using \`arguments\``,
     `export function GET() {
       arguments[0]
     }`,
+    "route.ts",
   ],
 ]
 
@@ -78,21 +80,25 @@ const routeHandlerHoistingErrorCases = [
     `errors for non-hoisted exported function declarations (named)`,
     `GET()
     export function GET() {}`,
+    "route.ts",
   ],
   [
     `errors for non-hoisted exported function declarations (named)`,
     `console.log(GET)
     export function GET() {}`,
+    "route.ts",
   ],
   [
     `errors for non-hoisted exported function declarations (default)`,
     `GET()
     export default function GET() {}`,
+    "route.ts",
   ],
   [
     `errors for non-hoisted exported function declarations (default)`,
     `console.log(GET)
     export default function GET() {}`,
+    "route.ts",
   ],
 ]
 
@@ -122,9 +128,10 @@ export async function GET() {}`,
     `foo()
 function foo() {}
 export const GET = catchUncaughtRoute$1337(async function GET() {}, {
-  path: "file.ts",
+  path: "route.ts",
   method: "GET"
 })`,
+    "/route.ts",
   ],
   [
     `doesn't error for imported values`,
@@ -132,9 +139,10 @@ export const GET = catchUncaughtRoute$1337(async function GET() {}, {
 export async function POST(request: NextRequest) {}`,
     `import { POST as buildHandler } from "@/app/api/v1/builds/route"
 export const POST = catchUncaughtRoute$1337(async function POST(request: NextRequest) {}, {
-  path: "file.ts",
+  path: "route.ts",
   method: "POST"
 })`,
+    "/route.ts",
   ],
   [
     `doesn't error for types with same name`,

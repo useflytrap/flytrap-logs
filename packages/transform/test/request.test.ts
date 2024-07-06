@@ -29,7 +29,11 @@ const requestTextCases = [
 ] */
 
 describe("Request transforms", () => {
-  createDescribe("Request.json", requestJsonCases)
-  createDescribe("Request.text", requestTextCases)
+  createDescribe("Request.json", requestJsonCases, {
+    onlyServerActionsAndRoutes: false,
+  })
+  createDescribe("Request.text", requestTextCases, {
+    onlyServerActionsAndRoutes: false,
+  })
   // createDescribe("Request.formData", requestFormDataCases)
 })

@@ -45,6 +45,7 @@ export type LogsPluginOptions = {
   diffs?: boolean
   exportsFilePath?: string
   autoImports?: boolean
+  onlyServerActionsAndRoutes?: boolean
 }
 
 // Source: https://github.com/babel/babel/blob/main/packages/babel-parser/src/parse-error.ts

@@ -171,10 +171,11 @@ export async function GET() {
 
   redirect("/dashboard")
 }`,
-    `import { redirect } from "next/navigation"
+    `import { catchUncaughtRoute as catchUncaughtRoute$1337 } from "lib/logging";
+import { redirect } from "next/navigation"
 import { NextRequest, NextResponse } from "next/server"
 
-export const GET = catchUncaughtRoute(async function GET() {
+export const GET = catchUncaughtRoute$1337(async function GET() {
   const user = null
 
   if (!user) {
@@ -183,9 +184,10 @@ export const GET = catchUncaughtRoute(async function GET() {
 
   redirect("/dashboard")
 }, {
-  path: "file.ts",
+  path: "route.ts",
   method: "GET",
 })`,
+    "/route.ts",
   ],
 ]
 
@@ -206,6 +208,7 @@ describe("Auto importing", () => {
     autoImportCoreFunctionCases,
     {
       autoImports: true,
+      onlyServerActionsAndRoutes: false,
       response: { json, redirect, classInstance: response },
       request: { json: parseJson, text: parseText },
       next: {
@@ -367,7 +370,7 @@ describe("Auto importing", () => {
   )
 
   // Regressions
-  /* createDescribe("Auto-imports — regression tests", autoImportRegressionCases, {
+  createDescribe("Auto-imports — regression tests", autoImportRegressionCases, {
     exportsFilePath: "./lib/logging.ts",
     autoImports: true,
     response: { json, redirect, classInstance: response },
@@ -379,5 +382,5 @@ describe("Auto importing", () => {
         classInstance: nextResponse,
       },
     },
-  }) */
+  })
 })
