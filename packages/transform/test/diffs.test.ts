@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from "vitest"
-import { writeDiff } from "../src/diff"
+import { getDiffAbsolutePath, writeDiff } from "../src/diff"
 import { join } from "path"
 import { readFileSync, rmSync } from "fs"
 
@@ -26,6 +26,14 @@ describe("Writing diffs", () => {
       join(__dirname, "..", ".flytrap", "src", "api", "webhooks", "route.ts")
     ).toString()
     expect(diffContents).toBe(expectedDiff)
+  })
+
+  it("resolves paths to package.json dir", () => {
+    const diffAbsolutePath = getDiffAbsolutePath(
+      "/usr/project",
+      "/usr/project/app/lib/actions.ts"
+    )
+    expect(diffAbsolutePath).toBe("/usr/project/.flytrap/app/lib/actions.ts")
   })
 })
 

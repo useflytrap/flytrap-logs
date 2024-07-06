@@ -3,20 +3,28 @@ import { createPatch } from "diff"
 import { mkdirSync, writeFileSync } from "fs"
 import { dirname, join } from "path"
 import { Err, Ok } from "ts-results"
+import { filePathRelativeToPackageJsonDir } from "./path-utils"
 
-const diffAbsolutePath = (packageJsonPath: string, fileName: string) =>
-  join(packageJsonPath, ".flytrap", fileName)
+export const getDiffAbsolutePath = (
+  packageJsonPath: string,
+  filePath: string
+) =>
+  join(
+    packageJsonPath,
+    ".flytrap",
+    filePathRelativeToPackageJsonDir(filePath, packageJsonPath)
+  )
 
 export function writeDiff(
   packageJsonPath: string,
-  fileName: string,
+  filePath: string,
   oldCode: string,
   newCode: string
 ) {
   try {
-    const patchPath = diffAbsolutePath(packageJsonPath, fileName)
+    const patchPath = getDiffAbsolutePath(packageJsonPath, filePath)
     mkdirSync(dirname(patchPath), { recursive: true })
-    const patch = createPatch(fileName, oldCode, newCode)
+    const patch = createPatch(filePath, oldCode, newCode)
     writeFileSync(patchPath, patch)
     return Ok(undefined)
   } catch (error) {
@@ -26,7 +34,7 @@ export function writeDiff(
         explanations: ["writing_diffs_failed"],
         solutions: ["disable_diffs", "open_issue"],
         params: {
-          filePath: fileName,
+          filePath,
           error: String(error),
         },
       })
