@@ -1,4 +1,4 @@
-import { Err, Ok } from "ts-results"
+import { Ok } from "ts-results"
 import { parseCode } from "../parser"
 import MagicString from "magic-string"
 import {
@@ -8,34 +8,35 @@ import {
   format,
   isAbsolute,
   join,
-  normalize,
   relative,
 } from "path"
-import { findStaticImports, parseStaticImport } from "mlly"
 import { cwd } from "process"
 import { LogsPluginOptions } from "../types"
-import { createError } from "@useflytrap/logs-shared"
 
 export const DEFAULT_IMPORT_ALIASES = [
   ["@/", "./"],
   ["~/", "./"],
 ]
-const EXPORTED_CORE_FUNCTIONS = [
-  "getContext",
-  "addContext",
-  "flushAsync",
-  "flush",
-  "catchUncaughtAction",
-  "catchUncaughtRoute",
-  "parseJson",
-  "parseText",
-  "response",
-  "nextResponse",
-  "json",
-  "nextJson",
-  "redirect",
-  "nextRedirect",
-]
+
+export function getCoreFunctionImportMap(options: LogsPluginOptions = {}) {
+  return {
+    getContext: "getContext$1337",
+    addContext: "addContext$1337",
+    flushAsync: "flushAsync$1337",
+    flush: "flush$1337",
+    catchUncaughtAction: "catchUncaughtAction$1337",
+    catchUncaughtRoute: "catchUncaughtRoute$1337",
+    parseJson: options.request?.json || "parseJson$1337",
+    parseText: options.request?.text || "parseText$1337",
+    response: options.response?.classInstance || "response$1337",
+    nextResponse:
+      options.next?.nextResponse?.classInstance || "nextResponse$1337",
+    json: options.response?.json || "json$1337",
+    nextJson: options.next?.nextResponse?.json || "nextJson$1337",
+    redirect: options.response?.redirect || "redirect$1337",
+    nextRedirect: options.next?.nextResponse?.redirect || "nextRedirect$1337",
+  } as const
+}
 
 function findImportStartingIndex(code: string, filePath: string) {
   const astResult = parseCode(code, filePath)
@@ -57,10 +58,19 @@ function findImportStartingIndex(code: string, filePath: string) {
 }
 
 // @todo: fix this naive implementation
-function findRequiredImports(code: string) {
-  return EXPORTED_CORE_FUNCTIONS.filter((functionName) =>
-    code.includes(functionName)
-  )
+function findRequiredImports(code: string, options: LogsPluginOptions) {
+  const requiredImports: Partial<ReturnType<typeof getCoreFunctionImportMap>> =
+    {}
+  for (const [importedFunction, importAlias] of Object.entries(
+    getCoreFunctionImportMap(options)
+  )) {
+    if (code.includes(importAlias)) {
+      // @ts-expect-error: we're indexing correctly here
+      requiredImports[importedFunction] = importAlias
+    }
+  }
+
+  return requiredImports
 }
 
 function getRelativePathToExportsFile(
@@ -82,8 +92,7 @@ function getRelativePathToExportsFile(
 export function addAutoImports(
   code: string,
   filePath: string,
-  importAliases: string[][] = DEFAULT_IMPORT_ALIASES,
-  options: LogsPluginOptions = {}
+  options: LogsPluginOptions
 ) {
   const startingIndexRes = findImportStartingIndex(code, filePath)
   if (startingIndexRes.err) return startingIndexRes
@@ -97,110 +106,27 @@ export function addAutoImports(
     })
   }
 
-  const imports = findStaticImports(code)
-
   // Required imports
-  const requiredImports = findRequiredImports(code)
+  const requiredImportsMap = findRequiredImports(code, options)
   const relativeExportsPath = getRelativePathToExportsFile(
     filePath,
     options.exportsFilePath,
     options.packageJsonDirPath
   )
 
-  const relativeExportsPathNormalized = join(
-    dirname(relativeExportsPath),
-    basename(relativeExportsPath, extname(relativeExportsPath))
-  )
-
-  const functionsImportedFromLoggingFile = imports
-    .map((staticImport) => parseStaticImport(staticImport))
-    .filter((parsedImport) => {
-      if (parsedImport.namedImports === undefined) return false
-
-      return EXPORTED_CORE_FUNCTIONS.some((coreFuncName) => {
-        return Object.keys(parsedImport.namedImports!).includes(coreFuncName)
-      })
-    })
-    .filter((parsedImport) => {
-      // Allow import aliases
-      if (
-        importAliases.some(([alias]) => parsedImport.specifier.includes(alias))
-      )
-        return true
-      return normalize(parsedImport.specifier) === relativeExportsPathNormalized
-    })
-    .map((filteredImport) => filteredImport.namedImports)
-    .reduce((acc, curr) => {
-      const currValues = []
-      for (const [importedFunction] of Object.entries(curr!)) {
-        currValues.push(importedFunction)
-      }
-      return [...acc, ...currValues]
-    }, [] as string[])
-
-  const functionsToAutoImport = requiredImports.filter(
-    (requiredImport) =>
-      !functionsImportedFromLoggingFile.includes(requiredImport)
-  )
-
   // Add imports
-  if (functionsToAutoImport.length > 0) {
+  if (Object.keys(requiredImportsMap).length > 0) {
     s.appendLeft(
       startingIndexRes.val,
-      `\nimport { ${Array.from(functionsToAutoImport).join(
-        ", "
-      )} } from "${format({
+      `\nimport { ${Object.entries(requiredImportsMap)
+        .map(
+          ([functionName, importAlias]) => `${functionName} as ${importAlias}`
+        )
+        .join(", ")} } from "${format({
         dir: dirname(relativeExportsPath),
         name: basename(relativeExportsPath, extname(relativeExportsPath)),
         ext: "",
       })}";\n`
-    )
-  }
-
-  // Make sure that required imports are all imported
-  // from the correct logging.ts file and not somewhere else
-
-  // Make sure there are no duplicate imports for any of the `EXPORTED_CORE_FUNCTIONS`
-  // imports. This can happen if someone accidentally would import a function with the same
-  // name as one of the exported core functions.
-  const exportedCoreFunctionsImportedAfterTransform = findStaticImports(
-    s.toString()
-  )
-    .map((staticImport) => parseStaticImport(staticImport))
-    .map((filteredImport) => filteredImport.namedImports)
-    .filter(Boolean)
-    .reduce((acc, curr) => {
-      const currValues = []
-      for (const [importedFunction] of Object.entries(curr!)) {
-        currValues.push(importedFunction)
-      }
-      return [...acc, ...currValues]
-    }, [] as string[])
-    .filter((importedFunctionName) =>
-      EXPORTED_CORE_FUNCTIONS.includes(importedFunctionName)
-    )
-
-  const uniqueCoreImports = Array.from(
-    new Set(exportedCoreFunctionsImportedAfterTransform)
-  )
-
-  if (
-    uniqueCoreImports.length !==
-    exportedCoreFunctionsImportedAfterTransform.length
-  ) {
-    return Err(
-      createError({
-        events: ["transform_failed"],
-        explanations: ["invalid_core_imports"],
-        solutions: ["remove_invalid_imports", "open_issue"],
-        params: {
-          coreFunctionNames: uniqueCoreImports
-            .map((importName) => `\`${importName}\``)
-            .join(", "),
-          filePath,
-          loggingFilePath: relativeExportsPath,
-        },
-      })
     )
   }
 

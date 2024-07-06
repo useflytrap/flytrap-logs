@@ -19,6 +19,22 @@ export function createDescribe(
           diffs: false,
           autoImports: false,
           packageJsonDirPath: "/",
+          response: {
+            json: "json",
+            redirect: "redirect",
+            classInstance: "response",
+          },
+          request: {
+            json: "parseJson",
+            text: "parseText",
+          },
+          next: {
+            nextResponse: {
+              json: "nextJson",
+              redirect: "nextRedirect",
+              classInstance: "nextResponse",
+            },
+          },
           ...options,
         },
         {

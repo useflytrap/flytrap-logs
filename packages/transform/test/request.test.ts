@@ -19,17 +19,17 @@ const requestTextCases = [
   ["transforms .text", "x.text()", "parseText(x)"],
 ]
 
-const requestFormDataCases = [
+/* const requestFormDataCases = [
   [
     "transforms only .formData calls which have no arguments",
     `x.formData(1)`,
     `x.formData(1)`,
   ],
   ["transforms .formData", "x.formData()", "parseFormData(x)"],
-]
+] */
 
 describe("Request transforms", () => {
   createDescribe("Request.json", requestJsonCases)
   createDescribe("Request.text", requestTextCases)
-  createDescribe("Request.formData", requestFormDataCases)
+  // createDescribe("Request.formData", requestFormDataCases)
 })

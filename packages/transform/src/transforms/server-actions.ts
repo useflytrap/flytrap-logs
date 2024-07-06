@@ -25,6 +25,7 @@ import { createError } from "@useflytrap/logs-shared"
 import { generate } from "../import-utils"
 import { filePathRelativeToPackageJsonDir } from "../path-utils"
 import { cwd } from "process"
+import { getCoreFunctionImportMap } from "./auto-import"
 
 function hasServerDirective(
   path: NodePath<
@@ -45,9 +46,10 @@ export function createCatchUncaughtAction(
   funcNode: ArrowFunctionExpression | FunctionExpression,
   name: string,
   filepath: string,
-  packageJsonDirPath?: string
+  options: LogsPluginOptions
 ) {
-  return callExpression(identifier("catchUncaughtAction"), [
+  const { catchUncaughtAction } = getCoreFunctionImportMap(options)
+  return callExpression(identifier(catchUncaughtAction), [
     funcNode,
     objectExpression([
       objectProperty(
@@ -55,7 +57,7 @@ export function createCatchUncaughtAction(
         stringLiteral(
           `${filePathRelativeToPackageJsonDir(
             filepath,
-            packageJsonDirPath ?? cwd()
+            options.packageJsonDirPath ?? cwd()
           )}/${name}`
         )
       ),
@@ -126,7 +128,7 @@ export function transformFunctions(
           path.node,
           name,
           filepath,
-          options.packageJsonDirPath
+          options
         )
         path.replaceWith(wrapper)
       }
@@ -173,7 +175,7 @@ export function transformFunctionDeclaration(
         funcNode,
         path.node.id.name,
         filepath,
-        options.packageJsonDirPath
+        options
       )
 
       if (isExportDefaultDeclaration(path.parent)) {

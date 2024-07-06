@@ -7,6 +7,7 @@ import {
   CallExpression,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
+import { getCoreFunctionImportMap } from "./auto-import"
 
 export function transformRequest(
   path: NodePath<CallExpression>,
@@ -19,9 +20,10 @@ export function transformRequest(
     isIdentifier(path.node.callee.property, { name: "json" }) &&
     path.node.arguments.length === 0
   ) {
+    const { parseJson } = getCoreFunctionImportMap(options)
     // Create the `parseJson(x)` call expression
     const newCall = callExpression(
-      identifier("parseJson"),
+      identifier(parseJson),
       [path.node.callee.object] // `x` in `x.json()`
     )
 
@@ -36,9 +38,10 @@ export function transformRequest(
     isIdentifier(path.node.callee.property, { name: "text" }) &&
     path.node.arguments.length === 0
   ) {
+    const { parseText } = getCoreFunctionImportMap(options)
     // Create the `parseText(x)` call expression
     const newCall = callExpression(
-      identifier("parseText"),
+      identifier(parseText),
       [path.node.callee.object] // `x` in `x.text()`
     )
 
@@ -47,7 +50,7 @@ export function transformRequest(
   }
 
   // `Request.formData`
-  if (
+  /* if (
     options.request?.formData !== false &&
     isMemberExpression(path.node.callee) &&
     isIdentifier(path.node.callee.property, { name: "formData" }) &&
@@ -61,5 +64,5 @@ export function transformRequest(
 
     // Replace `x.formData()` with `parseFormData(x)`
     path.replaceWith(newCall)
-  }
+  } */
 }

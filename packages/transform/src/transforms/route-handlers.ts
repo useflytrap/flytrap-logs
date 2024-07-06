@@ -22,6 +22,7 @@ import { createError } from "@useflytrap/logs-shared"
 import { generate } from "../import-utils"
 import { filePathRelativeToPackageJsonDir } from "../path-utils"
 import { cwd } from "process"
+import { getCoreFunctionImportMap } from "./auto-import"
 
 const ROUTE_HANDLER_METHODS = [
   "GET",
@@ -38,9 +39,10 @@ export function createCatchUncaughtRoute(
   name: string,
   method: string,
   filepath: string,
-  packageJsonDirPath?: string
+  options: LogsPluginOptions
 ) {
-  return callExpression(identifier("catchUncaughtRoute"), [
+  const { catchUncaughtRoute } = getCoreFunctionImportMap(options)
+  return callExpression(identifier(catchUncaughtRoute), [
     funcNode,
     objectExpression([
       objectProperty(
@@ -48,7 +50,7 @@ export function createCatchUncaughtRoute(
         stringLiteral(
           filePathRelativeToPackageJsonDir(
             filepath,
-            packageJsonDirPath ?? cwd()
+            options.packageJsonDirPath ?? cwd()
           )
         )
       ),
@@ -117,7 +119,7 @@ export function transformRouteFunctions(
           name,
           name,
           filepath,
-          options.packageJsonDirPath
+          options
         )
         path.replaceWith(wrapper)
       }
@@ -162,7 +164,7 @@ export function transformRouteFunctionDeclaration(
         path.node.id.name,
         path.node.id.name,
         filepath,
-        options.packageJsonDirPath
+        options
       )
 
       if (isExportDefaultDeclaration(path.parent)) {

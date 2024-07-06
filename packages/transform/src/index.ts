@@ -33,10 +33,13 @@ import {
 import { writeDiff } from "./diff"
 import { cwd } from "process"
 import { parseCode } from "./parser"
-import { addAutoImports } from "./transforms/auto-import"
+import {
+  addAutoImports,
+  getCoreFunctionImportMap,
+} from "./transforms/auto-import"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
-  options
+  options = {}
 ) => ({
   name: "flytrap-logs-transform",
   enforce: "pre",
@@ -89,13 +92,22 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
         transformFunctions(path, exportNames, id, options).unwrap()
         transformRouteFunctions(path, id, options).unwrap()
       },
-
       CallExpression(path) {
+        const {
+          json,
+          redirect,
+          response,
+          nextJson,
+          nextRedirect,
+          nextResponse,
+        } = getCoreFunctionImportMap(options)
         // `Response.(json | text | redirect)`
         transformResponse(path, {
           ...options,
           response: {
-            ...options?.response,
+            json,
+            redirect,
+            classInstance: response,
             ensureGlobalResponse:
               options?.response?.ensureGlobalResponse ?? true,
           },
@@ -104,8 +116,9 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
         transformResponse(path, {
           ...options,
           response: {
-            json: options?.next?.nextResponse?.json ?? "nextJson",
-            redirect: options?.next?.nextResponse?.redirect ?? "nextRedirect",
+            json: nextJson,
+            redirect: nextRedirect,
+            classInstance: nextResponse,
             classInstanceName: "NextResponse",
           },
         })
@@ -124,12 +137,13 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
         })
         // `new NextResponse(...)`
         if (options?.next?.nextResponse?.classInstance !== false) {
+          const { nextJson, nextResponse } = getCoreFunctionImportMap(options)
+
           transformResponseInstance(path, {
             ...options,
             response: {
-              json: options?.next?.nextResponse?.json ?? "nextJson",
-              classInstance:
-                options?.next?.nextResponse?.classInstance ?? "nextResponse",
+              json: nextJson,
+              classInstance: nextResponse,
               classInstanceName:
                 options?.next?.nextResponse?.classInstanceName ??
                 "NextResponse",
@@ -153,12 +167,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
 
     // Add imports
     if (options?.autoImports !== false) {
-      return addAutoImports(
-        generatedCode.code,
-        id,
-        options?.next?.importAliases,
-        options
-      ).unwrap()
+      return addAutoImports(generatedCode.code, id, options).unwrap()
     }
 
     return generatedCode

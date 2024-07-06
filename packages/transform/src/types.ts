@@ -2,9 +2,9 @@ import type { ParserOptions } from "@babel/parser"
 
 export type LogsPluginOptions = {
   request?: {
-    json?: boolean
-    text?: boolean
-    formData?: boolean
+    json?: false | string
+    text?: false | string
+    formData?: false | string
   }
   response?: {
     json?: false | string
@@ -30,11 +30,6 @@ export type LogsPluginOptions = {
     serverActionsPaths?: string[]
     routeHandlers?: boolean
     routeHandlerPaths?: string[]
-    nextRequest?: {
-      json?: boolean
-      text?: boolean
-      formData?: boolean
-    }
     nextResponse?: {
       json?: false | string
       redirect?: false | string

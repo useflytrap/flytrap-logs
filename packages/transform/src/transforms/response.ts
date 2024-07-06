@@ -8,6 +8,7 @@ import {
   NewExpression,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
+import { getCoreFunctionImportMap } from "./auto-import"
 
 export function transformResponseInstance(
   path: NodePath<NewExpression>,
@@ -19,6 +20,7 @@ export function transformResponseInstance(
       name: options.response?.classInstanceName ?? "Response",
     })
   ) {
+    const { response } = getCoreFunctionImportMap(options)
     if (options.response?.ensureGlobalResponse) {
       // Ensure 'Response' is the global Web API Response object
       let currentScope = path.scope
@@ -40,19 +42,13 @@ export function transformResponseInstance(
       if (isShadowed === false) {
         // Replace `new Response(...)` with `response(...)`
         path.replaceWith(
-          callExpression(
-            identifier(options.response?.classInstance ?? "response"),
-            path.node.arguments
-          )
+          callExpression(identifier(response), path.node.arguments)
         )
       }
     } else {
       // Replace `new Response(...)` with `response(...)`
       path.replaceWith(
-        callExpression(
-          identifier(options.response?.classInstance ?? "response"),
-          path.node.arguments
-        )
+        callExpression(identifier(response), path.node.arguments)
       )
     }
   }
@@ -71,6 +67,7 @@ export function transformResponse(
     }) &&
     isIdentifier(path.node.callee.property, { name: "json" })
   ) {
+    const { json } = getCoreFunctionImportMap(options)
     if (options.response?.ensureGlobalResponse) {
       // Ensure 'Response' is the global Web API Response object
       let currentScope = path.scope
@@ -91,20 +88,10 @@ export function transformResponse(
 
       if (isShadowed === false) {
         // Replace `Response.json()` with `json()`
-        path.replaceWith(
-          callExpression(
-            identifier(options.response?.json ?? "json"),
-            path.node.arguments
-          )
-        )
+        path.replaceWith(callExpression(identifier(json), path.node.arguments))
       }
     } else {
-      path.replaceWith(
-        callExpression(
-          identifier(options.response?.json ?? "json"),
-          path.node.arguments
-        )
-      )
+      path.replaceWith(callExpression(identifier(json), path.node.arguments))
     }
   }
 
@@ -117,6 +104,7 @@ export function transformResponse(
     }) &&
     isIdentifier(path.node.callee.property, { name: "redirect" })
   ) {
+    const { redirect } = getCoreFunctionImportMap(options)
     if (options.response?.ensureGlobalResponse) {
       // Ensure 'Response' is the global Web API Response object
       let currentScope = path.scope
@@ -138,18 +126,12 @@ export function transformResponse(
       if (isShadowed === false) {
         // Replace `Response.redirect()` with `redirect()`
         path.replaceWith(
-          callExpression(
-            identifier(options.response?.redirect ?? "redirect"),
-            path.node.arguments
-          )
+          callExpression(identifier(redirect), path.node.arguments)
         )
       }
     } else {
       path.replaceWith(
-        callExpression(
-          identifier(options.response?.redirect ?? "redirect"),
-          path.node.arguments
-        )
+        callExpression(identifier(redirect), path.node.arguments)
       )
     }
   }
