@@ -37,6 +37,7 @@ import {
   addAutoImports,
   getCoreFunctionImportMap,
 } from "./transforms/auto-import"
+import { isNodesEquivalent } from "@babel/types"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options = {}
@@ -67,13 +68,13 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       })
       .filter(Boolean) as string[]
 
-    // Hoist checker
-    if (options?.hoistChecker !== false) {
-      hoistChecker(code, id).unwrap()
-    }
-
     // Parse the code into an AST
     const ast = parseCode(code, id, options?.babel?.parserOptions).unwrap()
+    const originalAst = parseCode(
+      code,
+      id,
+      options?.babel?.parserOptions
+    ).unwrap()
 
     // Traverse the AST and transform
     traverse(ast, {
@@ -154,6 +155,14 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     })
 
     const generatedCode = generate(ast, {}, code)
+
+    // Hoist checker
+    if (options?.hoistChecker !== false) {
+      // Only check hoisting if AST has been changed
+      if (!isNodesEquivalent(ast, originalAst)) {
+        hoistChecker(code, id).unwrap()
+      }
+    }
 
     // Write diffs
     if (options?.diffs !== false) {

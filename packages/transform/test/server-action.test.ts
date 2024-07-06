@@ -163,6 +163,13 @@ const serverActionHoistingSuccessCases = [
       path: "file.ts/bar"
     })`,
   ],
+  [
+    `doesn't try to hoist non-server actions`,
+    `foo()
+export function foo() {}`,
+    `foo()
+export function foo() {}`,
+  ],
 ]
 
 // @todo: hoist checker accepted test case for
