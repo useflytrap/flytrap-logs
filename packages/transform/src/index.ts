@@ -159,7 +159,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     // Hoist checker
     if (options?.hoistChecker !== false) {
       // Only check hoisting if AST has been changed
-      if (isNodesEquivalent(ast, originalAst)) return
+      if (isNodesEquivalent(ast, originalAst)) return { code }
       hoistChecker(code, id).unwrap()
     }
 
