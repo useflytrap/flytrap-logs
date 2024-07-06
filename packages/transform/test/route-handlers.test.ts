@@ -136,6 +136,20 @@ export const POST = catchUncaughtRoute$1337(async function POST(request: NextReq
   method: "POST"
 })`,
   ],
+  [
+    `doesn't error for types with same name`,
+    `export type Hello = {}
+export function Hello() {}`,
+    `export type Hello = {}
+export function Hello() {}`,
+  ],
+  [
+    `doesn't error for interface with same name`,
+    `export interface Hello {}
+export function Hello() {}`,
+    `export interface Hello {}
+export function Hello() {}`,
+  ],
 ]
 
 describe("Route Handler transforms", () => {
