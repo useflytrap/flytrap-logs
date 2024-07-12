@@ -2,6 +2,22 @@
   <img src="https://raw.githubusercontent.com/useflytrap/flytrap-logs/main/.github/assets/cover.png" alt="Flytrap cover" />
 </a>
 
+<div align="center">
+  <table>
+    <tbody>
+      <tr>
+        <td>
+          <a href="https://discord.gg/tQaADUfdeP">💬 Join our Discord</a>
+        </td>
+        <td>
+          <a href="https://x.com/useflytrap">𝕏 Follow us</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
 # Flytrap Logs
 
 [![npm version][npm-version-src]][npm-href]
@@ -49,10 +65,6 @@ With Flytrap Logs, each request / Server Action will be accompanied with a log t
   ]
 }
 ```
-
----
-
-- [👥 &nbsp;Discord](https://discord.gg/tQaADUfdeP)
 
 ## Features
 
