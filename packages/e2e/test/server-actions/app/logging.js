@@ -1,4 +1,4 @@
-import { createFlytrapLogger } from "@useflytrap/logs";
+import { createFlytrapLogger } from "@useflytrap/logs"
 
 export const {
   getContext,
@@ -14,7 +14,7 @@ export const {
   json,
   nextJson,
   redirect,
-  nextRedirect
+  nextRedirect,
 } = createFlytrapLogger({
-  flushMethod: 'stdout',
-});
+  flushMethod: "stdout",
+})

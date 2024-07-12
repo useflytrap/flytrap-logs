@@ -12,8 +12,6 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
-    "build": "rollup -c",
-    "dev": "rollup -cw",
     "lint": "pnpm eslint --fix \"{src,test}/**/*.{js,json,ts}\""
   },
   "devDependencies": {
@@ -28,6 +26,7 @@
     "fs-extra": "^11.2.0",
     "ms": "^2.1.3",
     "next": "latest",
-    "type-fest": "^4.15.0"
+    "type-fest": "^4.15.0",
+    "globals": "^15.0.0"
   }
 }

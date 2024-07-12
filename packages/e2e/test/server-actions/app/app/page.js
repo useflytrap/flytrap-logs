@@ -1,12 +1,11 @@
-'use client';
+"use client"
 
-import { testAction } from "../lib/actions";
+import { testAction } from "../lib/actions"
 
 export default function Home() {
-  
   async function callAction() {
     await testAction({
-      foo: "bar"
+      foo: "bar",
     })
     console.log("ACTION DONE")
   }
@@ -15,5 +14,5 @@ export default function Home() {
     <main>
       <button onClick={callAction}>Send JSON</button>
     </main>
-  );
+  )
 }
