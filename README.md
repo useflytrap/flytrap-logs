@@ -1,6 +1,6 @@
-<p align="center">
-	<img src="https://github.com/useflytrap/flytrap-js/raw/main/docs/flytrap-banner.png" />
-</p>
+<a href="https://useflytrap.com">
+  <img src="https://raw.githubusercontent.com/useflytrap/flytrap-logs/main/.github/assets/cover.png" alt="Flytrap cover" />
+</a>
 
 # Flytrap Logs
 
