@@ -14,34 +14,32 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: 🔠 Lint project
-        run: pnpm lint
+        run: npm run lint
 
   test:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
-      - run: corepack enable
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: 🛠 Build projects
-        run: pnpm build
+        run: npm run build
 
       - name: 🧪 Run unit tests
-        run: pnpm test
+        run: npm test
