@@ -146,7 +146,7 @@ export function validateConfig<T extends object>({
 export function createFlytrapLogger<T extends object>({
   format = "json",
   flushMethod = "api",
-  logsEndpoint = "https://logs.useflytrap,com/api/v1/logs/raw",
+  logsEndpoint = "https://logs.useflytrap.com/api/v1/logs/raw",
   publicKey,
   vercel,
   encryption,
