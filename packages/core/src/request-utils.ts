@@ -126,7 +126,7 @@ export async function parseText(
 
 export function catchUncaughtRoute<
   RequestType extends Request,
-  T extends { params: Record<string, unknown> },
+  T extends { params: Record<string, unknown> }
 >(
   fn: (request: RequestType, context: T) => Promise<Response> | Response,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
@@ -215,6 +215,43 @@ export function catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
       })
       flush("error")
       return res as ReturnType<T>
+    }
+  }
+}
+
+export function catchUncaughtPage<
+  RequestType extends Request,
+  T extends { params: Record<string, unknown> }
+>(
+  fn: (params?: Record<string, string | string[]>) => Promise<object> | object,
+  addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
+  flush: FlushFn,
+  options?: Partial<z.infer<typeof baseLogSchema>>
+): (params?: Record<string, string | string[]>) => Promise<object> {
+  return async (params?: Record<string, string | string[]>) => {
+    const t0 = Date.now()
+    if (options) addContext(options)
+    try {
+      addContext({
+        req_headers: headersToRecord(headers()),
+      })
+      const res = await fn(params)
+      addContext({
+        http_status: 200,
+      })
+      addContext({
+        duration: Date.now() - t0,
+      })
+      flush("log")
+      return res
+    } catch (error) {
+      addContext({ error: serializeError(error) })
+      addContext({
+        duration: Date.now() - t0,
+        http_status: 500,
+      })
+      flush("error")
+      throw error
     }
   }
 }

@@ -2,6 +2,7 @@ import { z } from "zod"
 import { baseLogSchema } from "./schemas"
 import {
   catchUncaughtAction,
+  catchUncaughtPage,
   catchUncaughtRoute,
   json,
   nextJson,
@@ -278,12 +279,25 @@ export function createFlytrapLogger<T extends object>({
     // Request utils
     catchUncaughtRoute<
       RequestType extends Request,
-      T extends { params: Record<string, unknown> },
+      T extends { params: Record<string, unknown> }
     >(
       fn: (request: RequestType, context: T) => Promise<Response> | Response,
       options?: Partial<z.infer<typeof baseLogSchema>>
     ) {
       return catchUncaughtRoute(
+        fn,
+        addContext as AddContextFn<z.infer<typeof baseLogSchema>>,
+        flush,
+        options
+      )
+    },
+    catchUncaughtPage(
+      fn: (
+        params?: Record<string, string | string[]>
+      ) => Promise<object> | object,
+      options?: Partial<z.infer<typeof baseLogSchema>>
+    ) {
+      return catchUncaughtPage(
         fn,
         addContext as AddContextFn<z.infer<typeof baseLogSchema>>,
         flush,
