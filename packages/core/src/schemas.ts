@@ -22,7 +22,7 @@ export const httpMethods = [
   "PATCH",
 ] as const
 
-export const requestType = z.enum(["request", "action"])
+export const requestType = z.enum(["request", "action", "page", "layout"])
 
 export const baseLogSchema = z.object({
   method: z.enum(httpMethods),
