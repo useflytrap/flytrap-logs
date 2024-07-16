@@ -126,7 +126,7 @@ export async function parseText(
 
 export function catchUncaughtRoute<
   RequestType extends Request,
-  T extends { params: Record<string, unknown> }
+  T extends { params: Record<string, unknown> },
 >(
   fn: (request: RequestType, context: T) => Promise<Response> | Response,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
@@ -219,10 +219,7 @@ export function catchUncaughtAction<T extends (...args: any[]) => Promise<any>>(
   }
 }
 
-export function catchUncaughtPage<
-  RequestType extends Request,
-  T extends { params: Record<string, unknown> }
->(
+export function catchUncaughtPage(
   fn: (params?: Record<string, string | string[]>) => Promise<object> | object,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
   flush: FlushFn,
