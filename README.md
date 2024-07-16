@@ -3,87 +3,63 @@
 </a>
 
 <div align="center">
-  <table>
-    <tbody>
-      <tr>
-        <td>
-          <a href="https://discord.gg/tQaADUfdeP">💬 Join our Discord</a>
-        </td>
-        <td>
-          <a href="https://x.com/useflytrap">𝕏 Follow us</a>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <a href="https://discord.gg/tQaADUfdeP">💬 Join our Discord</a>
+  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+  <a href="https://x.com/useflytrap">𝕏 Follow us</a>
+  <br />
 </div>
 
-
-# Flytrap Logs
+## Flytrap Logs
 
 [![npm version][npm-version-src]][npm-href]
 [![npm downloads][npm-downloads-src]][npm-href]
 [![Github Actions][github-actions-src]][github-actions-href]
 
-> Instant Stripe-level observability for your Next.js project.
+> Open-source full-stack error monitoring for Next.js apps
 
-Flytrap Logs is a collection of packages to add [Stripe-inspired canonical logging](https://stripe.com/blog/canonical-log-lines) to your Next.js project. Works both manually and automatically through our plugin.
+Flytrap Logs is a full-stack error monitoring tool, that monitors your Server Actions, Route Handlers & React components, alerts you when your system health is degraded, and provides you context from tools and libraries you use such as Prisma, Drizzle, Supabase, Auth.js to help you fix bugs & outages faster. [Read more →](https://useflytrap.com/blog/error-monitoring-i-want)
 
-- `@useflytrap/logs`: Used for constructing the Stripe-inspired canonical log lines.
-- `@useflytrap/logs-transform` A code-transform for automatically instrumenting your Next.js [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers) and [Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
-
-With Flytrap Logs, each request / Server Action will be accompanied with a log that will be structured and something like this:
-
-```json
-{
-  "method": "POST",
-  "type": "request",
-  "path": "/api/v1/captures",
-  "req": "{ 'hello': 'world' }",
-  "req_headers": {
-    "accept": "*/*",
-    "accept-encoding": "gzip, deflate, br",
-    "accept-language": "sv-SE,sv;q=0.9",
-    "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
-    "x-forwarded-host": "www.useflytrap.com",
-    "x-forwarded-port": "443",
-    "x-forwarded-proto": "https",
-    "x-matched-path": "/api/v1/captures",
-  },
-  "res": {
-    "message": "Invalid public API key."
-  },
-  "res_headers": {
-    "content-type": "application/json"
-  },
-  "http_status": 401,
-  "duration": 80,
-  "auth_type": "api_key",
-  "project_id": "proj_01hsw5hj47fwst6xs4axx78x8h",
-  "key_id": "pk_MIIBIjANGpt",
-  "permissions_used": [
-    "capture"
-  ]
-}
-```
+> **Flytrap Logs is under active development.** Flytrap Logs is an ongoing effort to build a much more developer friendly error monitoring and debugging experience. Some features are not yet built. Open an issue or join our Discord to suggest features and follow our progress. [Check out our Roadmap →](#-roadmap)
 
 ## Features
 
-- Stripe-inspired observability for your Next.js project
-- Easily add context to your canonical log lines
-- Saves requests, responses, headers
-- Optional encryption for log fields
-- Fully type-safe logging
-- Identify users, API keys etc in your logs easily
+- Monitors Server-rendered pages, API Routes, Server Actions & React components. [Learn more →](#-monitoring-server-rendered-pages-api-routes-server-actions--react-components)
+- Saves context from libraries you use (eg. Prisma, Drizzle, Supabase, Stripe, Auth.js) to make debugging easier. [Learn more →](#-automatic-context-from-your-tools)
+- Type-safe structured canonical logging [Learn more →](#-type-safe-canonical-logging)
+- Encryption for log data [Learn more →](#-encryption-for-log-data)
 
-## 💻 Quickstart
+## ⚡️ Quickstart
 
 1. Install the Flytrap Logs SDK
-
-```pnpm
+```sh
 $ npm install @useflytrap/logs
 ```
 
-2. Create a logging file (`logging.ts`)
+2. Install the Next.js plugin
+```sh
+$ npm install -D @useflytrap/logs-transform
+```
+
+3. Add the plugin to `next.config.js`
+
+```javascript
+const { nextjs } = require('@useflytrap/logs-transform')
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack: nextjs({
+    // 👈 plugin options here
+  })
+}
+
+module.exports = nextConfig
+```
+
+4. Create a logging file (`logging.ts`)
+
+In your logging file, you can codify your logs with TypeScript, enable encryption, configure the log API endpoints and more.
+
+> 🚨 Remember to export all the functions as shown below
 
 ```typescript
 import { PermissionedApiKey } from "@/types"
@@ -121,101 +97,227 @@ export const {
 })
 ```
 
-This is our example logging definition for [our production site](https://www.useflytrap.com). Let's unpack what's going on here.
-
-- We're defining our `AdditionalLogContext` type. This will give us auto-complete throughout our code-base when using `addContext` to add context to our canonical log lines.
-- We're enabling encryption, and providing a public key to encrypt the values with. By default, sensitive values such as request payloads, headers, response payloads and errors (containing stacktraces) are encrypted when encryption is enabled.
-- We're exporting the functions that will be needed throughout our codebase (eg. `addContext`, `response`, `json`). These will be used throughout our code-base to add context to our canonical log.
-
-For instance, instead of `return Response.json({ success: true })`, we would have `return json({ success: true })`.
-
-We recommend to use our code-transform `@useflytrap/logs-transform`, which will automatically do everything for you.
-
-3. (Optional) Setup Flytrap Logs code transform
-
-If you have a large code-base already, you probably don't want to change it just for our tool. Because of this, we have created a Flytrap Logs plugin, which automatically changes the code at runtime, so you don't have to do anything.
-
-- Simply install the `@useflytrap/logs-transform` package
-
-```bash
-$ npm install @useflytrap/logs-transform
-```
-
-- Add the plugin to your Next.js config
-
-```typescript
-// next.config.mjs
-import { webpack } from "@useflytrap/logs-transform"
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  webpack(config) {
-		config.plugins = config.plugins ?? []
-		config.infrastructureLogging = { level: 'error' }
-    config.plugins.push(webpack({
-      // here goes the plugin options
-    }))
-		return config
-	},
-}
-
-export default nextConfig
-```
-
-4. (Optional) Manually use core SDK functions
-
-If you don't want to use the code-transform, you can manually use the core SDK functions. Here are the changes you should make:
-
-- Server Actions using the `catchUncaughtAction` wrapper
-
-```typescript
-"use server"
-
-export async function foo() {
-  // ... your code here ...
-}
-
-// becomes:
-export const foo = catchUncaughtAction(() => {
-  // ... your code here ...
-}, {
-  path: "@/actions/foo" // 👈 whichever path to distinguish this action from others
-}
-```
-
-- Route Handlers using the `catchUncaughtRoute` wrapper
-
-```typescript
-export async function POST() {
-  // ... your code here ...
-}
-
-// becomes:
-export const POST = catchUncaughtRoute(() => {}, {
-  path: "/api/v1/user",
-  method: "POST",
-})
-```
-
-#### Response utils
-
-- `Response.json()` -> `json()`
-- `Response.redirect()` -> `redirect()`
-- `new Response()` -> `response()`
-- `NextResponse.json()` -> `nextJson()`
-- `NextResponse.redirect()` -> `nextRedirect()`
-- `new NextResponse()` -> `nextResponse()`
-
-#### Request utils
-- `req.json()` -> `parseJson(req)`
-- `req.text()` -> `parseText(req)`
-
-5. Et voila! Enjoy your canonical logging setup
+Your code-base will now automatically emit log data from Server-rendered pages, API routes, Server Actions & React components.
 
 Try making a request, and you should see requests & server actions get logged in the console. If you want to send them to an API, you can change the `flushMethod` to `'api'` in your `logging.ts`, and define `logsEndpoint` with your API endpoint.
 
-## 💻 Setting up Flytrap Logs Dashboard
+You can manually add context to your log data using the `addContext` function like this:
+
+```typescript
+const apiKey = assertApiKey(headers())
+addContext({
+  auth_type: "api_key",
+  key_id: apiKey.id,
+})
+```
+
+## 📈 Monitoring Server-rendered pages, API Routes, Server Actions & React components
+
+The Flytrap Logs code-transform automatically wraps your SSR pages, API routes, Server Actions & React components to capture errors that happen in them. It also automatically gathers useful context that can be used when fixing bugs.
+
+#### What context is automatically captured
+- **SSR pages:** request headers, params, duration, path, status code, uncaught errors
+- **API routes:** request & response payload, request & response headers, duration, path, status code, uncaught errors
+- **Server Actions:** input data, response object, headers, duration, path, status code, uncaught errors
+
+<details>
+  <summary>
+    How SSR pages are transformed
+  </summary>
+
+```diff
++ import { catchUncaughtPage } from "./lib/logging"
+
+- export default function Home() {}
++ export default catchUncaughtPage(function Home() {}, {
++  path: "/"
++})
+```
+
+#### Notes
+- The `catchUncaughtPage` doesn't affect the runtime nature of your code at all, if bubbles any caught errors up, so error boundaries work perfectly.
+- Only React Server Component pages are transformed.
+</details>
+
+<details>
+  <summary>
+    How API routes are transformed
+  </summary>
+
+```diff
++ import { catchUncaughtRoute } from "@/lib/logging"
+
+- export function GET() {}
++ export const GET = catchUncaughtRoute(function GET() {}, {
++  path: "/"
++})
+```
+
+#### Notes
+- The `catchUncaughtRoute` doesn't affect the runtime nature of your code at all, it bubbles any caught errors up
+- Only React Server Component pages are transformed.
+</details>
+
+
+## 🛠️ Automatic context from your tools
+
+The worst thing that can happen when trying to fix a bug is not having enough context. Because of this, Flytrap logs automatically adds context from your libraries such as Prisma, Drizzle, Supabase, Auth.js, Stripe & more, so when you have enough context when fixing bugs.
+
+Here's an example to illustrate how context gets added to an Auth.js call on the server side:
+
+```diff
+import { auth } from "@/lib/auth"
++ import { addContext } from "@/lib/logging"
+
+export async function getCurrentUser() {
+  const session = await auth()
+
++  if (session) {
++    addContext({
++      'auth.js': {
++        user_id: session.user.id,
++        user_email: session.user.email
++      }
++    })
++  }
+
+  return session?.user
+}
+```
+
+Boom! Now your bug reports will automatically contain the authenticated user.
+
+Here's another example with Supabase:
+
+```diff
+import { auth } from "@/lib/auth"
++ import { addContext } from "@/lib/logging"
+
+export async function findUserById(userId: string) {
+  const session = await auth()
+
+  const { data: { users }, error } = await supabase.auth.admin.listUsers()
+
++ if (error) {
++   addContext({
++     'supabase': { error } // 👈 error context saved automatically
++   })
++ }
++ addContext({
++   'supabase': {
++     'supabase.auth.admin.listUsers()': users // 👈 fetched users saved to make bug-fixing easier
++   }
++ })
+
+  return users.find(({ id }) => id === userId)
+}
+```
+
+## 🪵 Type-safe canonical logging
+
+[Canonical logging](https://stripe.com/blog/canonical-log-lines) is a way of doing structured logging at scale, popularized by Stripe, where each action produces one log line, which contains all the necessary context to fix bugs, associate log lines with users, API keys or organizations, monitor latencies and more.
+
+It's a really good way to handle logs and easy to work with and extend. You can use TypeScript to make your canonical logs fully type-safe.
+
+Here's an example:
+
+```typescript
+import { PermissionedApiKey } from "@/types"
+import { createFlytrapLogger } from "@useflytrap/logs"
+
+export type AdditionalLogContext = {
+  team_id: string
+  project_id: string
+  auth_type: "api_key" | "dashboard"
+  permissions_used: PermissionedApiKey["permissions"]
+  build_id: string
+  key_id: string
+}
+
+export const {
+  getContext,
+  addContext,
+  flush,
+  flushAsync,
+  catchUncaughtAction,
+  catchUncaughtRoute,
+  response,
+  nextResponse,
+  json,
+  nextJson,
+  redirect,
+  nextRedirect,
+  parseJson,
+  parseText,
+} = createFlytrapLogger<AdditionalLogContext>({
+  publicKey:
+    "pk_MIIBI...",
+  vercel: {
+    enabled: true,
+  },
+  encryption: {
+    enabled: true,
+  },
+})
+```
+
+Here we're adding keys such as `team_id`, `key_id`, `build_id`, `permissions_used` so we can easily find logs filtered by team, API key and more.
+
+To manually add this context to our canonical log lines during execution of Server Actions or API Routes, we can use the `addContext` function.
+
+```typescript
+import { addContext, json } from "@/lib/logging"
+import { db } from "@/lib/db"
+import { Err, Ok } from "ts-results"
+
+async function assertUserInTeam(teamId: string, userId: string) {
+  const team = await db.teamMember.count({
+    where: {
+      teamId,
+      userId,
+    },
+  })
+
+  if (team === 0) {
+    return Err(
+      json(
+        {
+          message: `You're trying to access resources for team with ID "${teamId}" without having access to it.`,
+        },
+        { status: 401 }
+      )
+    )
+  }
+  addContext({
+    team_id: teamId,
+  })
+  return Ok(true)
+}
+```
+
+## 🔐 Encryption for log data
+
+To enable encryption for log data, simply add `encryption.enabled` to `true` in your `logging.ts` file, and your public key as the `publicKey` key. This uses the public key to encrypt the log data.
+
+By default, keys `req`, `req_headers`, `res`, `res_headers` & `error` are encrypted. If you want to add other keys to encrypt, simply add them to the `encryption.encryptKeys` key as an array:
+
+```typescript
+export const {
+  // ... omitted for brevity
+} = createFlytrapLogger<AdditionalLogContext>({
+  publicKey:
+    "pk_MIIBI...",
+  vercel: {
+    enabled: true,
+  },
+  encryption: {
+    enabled: true,
+    encryptKeys: ['api_key', 'user_id', 'user_email']
+  },
+})
+```
+
+## 🐛 Sending data to Flytrap Logs Dashboard
 
 If you want automatically set-up dashboards for your Route Handlers, Server Actions that look like this 👇, you can integrate our Logs SDK with the Flytrap Logs Dashboard.
 
@@ -230,6 +332,10 @@ If you want automatically set-up dashboards for your Route Handlers, Server Acti
 3. Create your `logging.ts` file, and add the `publicKey` from your onboarding there.
 4. Set the `flushMethod` in your `logging.ts` file to `'api'`
 
+## 🚧 Roadmap
+
+TODO!
+
 ## 💻 Development
 
 - Clone this repository
@@ -239,7 +345,7 @@ If you want automatically set-up dashboards for your Route Handlers, Server Acti
 
 ## License
 
-Made with ❤️ in Helsinki
+Made with ❤️ in Helsinki, Finland.
 
 Published under [MIT License](./LICENSE).
 
