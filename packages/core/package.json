@@ -1,6 +1,6 @@
 {
   "name": "@useflytrap/logs",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "Instant Stripe-level observability for your Next.js project",
   "repository": "useflytrap/flytrap-logs",
   "engines": {
@@ -39,6 +39,7 @@
     "release": "node scripts/patch-package.js patch && np --no-tests ; node scripts/patch-package.js unpatch"
   },
   "dependencies": {
+    "@useflytrap/logs-shared": "workspace:*",
     "human-logs": "^0.4.1",
     "serialize-error": "^11.0.3",
     "ts-results": "^3.3.0",
