@@ -110,6 +110,7 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
           path,
           defaultExport,
           id,
+          ast,
           options
         ).unwrap()
         transformRouteFunctionDeclaration(path, id, options).unwrap()
@@ -117,13 +118,13 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
 
       ArrowFunctionExpression(path) {
         transformFunctions(path, exportNames, id, options).unwrap()
-        transformPageFunctions(path, defaultExport, id, options).unwrap()
+        transformPageFunctions(path, defaultExport, id, ast, options).unwrap()
         transformRouteFunctions(path, id, options).unwrap()
       },
 
       FunctionExpression(path) {
         transformFunctions(path, exportNames, id, options).unwrap()
-        transformPageFunctions(path, defaultExport, id, options).unwrap()
+        transformPageFunctions(path, defaultExport, id, ast, options).unwrap()
         transformRouteFunctions(path, id, options).unwrap()
       },
       CallExpression(path) {

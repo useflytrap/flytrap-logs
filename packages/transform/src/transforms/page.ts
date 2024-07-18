@@ -25,8 +25,21 @@ import { cwd } from "process"
 import { getCoreFunctionImportMap } from "./auto-import"
 import { checkUnallowedSyntax } from "./server-actions"
 import { basename } from "path"
+import { ParseResult } from "@babel/parser"
 
 const PAGE_FILE_REGEXP = /page\.(t|j)sx?/
+
+export function astHasClientDirective(ast: ParseResult<File>) {
+  let hasClientDirective = false
+  traverse(ast, {
+    Directive(path) {
+      if (path.node.value.value === "use client") {
+        hasClientDirective = true
+      }
+    },
+  })
+  return hasClientDirective
+}
 
 function filePathToNextjsRoute(relativeFilePath: string) {
   const parts = relativeFilePath.split("/")
@@ -74,6 +87,7 @@ export function transformPageFunctions(
   path: NodePath<ArrowFunctionExpression | FunctionExpression>,
   exportNames: string[],
   filepath: string,
+  ast: ParseResult<File>,
   options: LogsPluginOptions = {}
 ) {
   if (
@@ -81,7 +95,8 @@ export function transformPageFunctions(
     ["ArrowFunctionExpression", "FunctionExpression"].includes(
       path.node.type
     ) &&
-    PAGE_FILE_REGEXP.test(basename(filepath))
+    PAGE_FILE_REGEXP.test(basename(filepath)) &&
+    astHasClientDirective(ast) === false
   ) {
     if (isVariableDeclarator(path.parent)) {
       const name = isIdentifier(path.parent.id)
@@ -115,12 +130,14 @@ export function transformPageFunctionDeclaration(
   path: NodePath<FunctionDeclaration>,
   exportNames: string[],
   filepath: string,
+  ast: ParseResult<File>,
   options: LogsPluginOptions = {}
 ) {
   if (
     options.next?.pages !== false &&
     path.node.type === "FunctionDeclaration" &&
-    PAGE_FILE_REGEXP.test(basename(filepath))
+    PAGE_FILE_REGEXP.test(basename(filepath)) &&
+    astHasClientDirective(ast) === false
   ) {
     if (!path.node.id) {
       // @todo: replace with human-friendly error
