@@ -30,6 +30,7 @@ export type LogsPluginOptions = {
     serverActionsPaths?: string[]
     routeHandlers?: boolean
     routeHandlerPaths?: string[]
+    pages?: boolean
     nextResponse?: {
       json?: false | string
       redirect?: false | string

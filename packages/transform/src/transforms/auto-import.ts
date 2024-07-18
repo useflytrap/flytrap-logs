@@ -26,6 +26,7 @@ export function getCoreFunctionImportMap(options: LogsPluginOptions = {}) {
     flush: "flush$1337",
     catchUncaughtAction: "catchUncaughtAction$1337",
     catchUncaughtRoute: "catchUncaughtRoute$1337",
+    catchUncaughtPage: "catchUncaughtPage$1337",
     parseJson: options.request?.json || "parseJson$1337",
     parseText: options.request?.text || "parseText$1337",
     response: options.response?.classInstance || "response$1337",

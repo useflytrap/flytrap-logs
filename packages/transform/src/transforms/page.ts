@@ -12,8 +12,6 @@ import {
   functionExpression,
   variableDeclaration,
   variableDeclarator,
-  isDirective,
-  isDirectiveLiteral,
   isExportDefaultDeclaration,
   ArrowFunctionExpression,
   isVariableDeclarator,
@@ -22,105 +20,62 @@ import {
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
 import { Err, Ok } from "ts-results"
-import { createError } from "@useflytrap/logs-shared"
 import { generate, traverse } from "../import-utils"
 import { filePathRelativeToPackageJsonDir } from "../path-utils"
 import { cwd } from "process"
 import { getCoreFunctionImportMap } from "./auto-import"
-import { ParseResult } from "@babel/parser"
+import { checkUnallowedSyntax } from "./server-actions"
 
-export function astHasServerDirective(ast: ParseResult<File>) {
-  let hasServerDirective = false
-  traverse(ast, {
-    Directive(path) {
-      if (path.node.value.value === "use server") {
-        hasServerDirective = true
-      }
-    },
-  })
-  return hasServerDirective
-}
+function filePathToNextjsRoute(relativeFilePath: string) {
+  const parts = relativeFilePath.split("/")
 
-function hasServerDirective(
-  path: NodePath<
-    ArrowFunctionExpression | FunctionExpression | FunctionDeclaration
-  >
-) {
   return (
-    path.findParent((p) => p.isProgram()) as NodePath<Program> | undefined
-  )?.node.directives.some(
-    (directive) =>
-      isDirective(directive) &&
-      isDirectiveLiteral(directive.value) &&
-      directive.value.value === "use server"
+    "/" +
+    parts
+      .map((part) => {
+        if (part === "app") return
+        if (/page\.(t|j)sx?/.test(part)) return
+        return part
+      })
+      .filter(Boolean)
+      .join("/")
   )
 }
 
-export function createCatchUncaughtAction(
+export function createCatchUncaughtPage(
   funcNode: ArrowFunctionExpression | FunctionExpression,
   name: string,
   filepath: string,
   options: LogsPluginOptions
 ) {
-  const { catchUncaughtAction } = getCoreFunctionImportMap(options)
-  return callExpression(identifier(catchUncaughtAction), [
+  const { catchUncaughtPage } = getCoreFunctionImportMap(options)
+
+  return callExpression(identifier(catchUncaughtPage), [
     funcNode,
     objectExpression([
       objectProperty(
         identifier("path"),
         stringLiteral(
-          `${filePathRelativeToPackageJsonDir(
-            filepath,
-            options.packageJsonDirPath ?? cwd()
-          )}/${name}`
+          filePathToNextjsRoute(
+            filePathRelativeToPackageJsonDir(
+              filepath,
+              options.packageJsonDirPath ?? cwd()
+            )
+          )
         )
       ),
     ]),
   ])
 }
 
-// @todo: fix this super naive check
-// @todo: remove code duplication
-export function checkUnallowedSyntax(code: string, filePath: string) {
-  if (code.includes("this.")) {
-    return Err(
-      createError({
-        events: ["transform_failed"],
-        explanations: ["disallowed_syntax_found"],
-        solutions: ["ignore_disallowed_syntax"],
-        params: {
-          filePath,
-          syntax: "this.",
-        },
-      })
-    )
-  }
-  if (code.includes("arguments[")) {
-    return Err(
-      createError({
-        events: ["transform_failed"],
-        explanations: ["disallowed_syntax_found"],
-        solutions: ["ignore_disallowed_syntax"],
-        params: {
-          filePath,
-          syntax: "arguments[",
-        },
-      })
-    )
-  }
-  return Ok(undefined)
-}
-
-export function transformFunctions(
+export function transformPageFunctions(
   path: NodePath<ArrowFunctionExpression | FunctionExpression>,
   exportNames: string[],
   filepath: string,
   options: LogsPluginOptions = {}
 ) {
-  if (hasServerDirective(path) === false) return Ok(undefined)
-
   if (
-    options.next?.serverActions !== false &&
+    options.next?.pages !== false &&
     ["ArrowFunctionExpression", "FunctionExpression"].includes(path.node.type)
   ) {
     if (isVariableDeclarator(path.parent)) {
@@ -138,7 +93,7 @@ export function transformFunctions(
           return unallowedSyntax
         }
 
-        const wrapper = createCatchUncaughtAction(
+        const wrapper = createCatchUncaughtPage(
           path.node,
           name,
           filepath,
@@ -151,21 +106,55 @@ export function transformFunctions(
   return Ok(undefined)
 }
 
-export function transformFunctionDeclaration(
+export function transformPageFunctionDeclaration(
   path: NodePath<FunctionDeclaration>,
   exportNames: string[],
   filepath: string,
   options: LogsPluginOptions = {}
 ) {
-  if (hasServerDirective(path) === false) return Ok(undefined)
-
   if (
-    options.next?.serverActions !== false &&
+    options.next?.pages !== false &&
     path.node.type === "FunctionDeclaration"
   ) {
     if (!path.node.id) {
       // @todo: replace with human-friendly error
       throw new Error(`Path node ID is null.`)
+    }
+
+    if (isExportDefaultDeclaration(path.parent)) {
+      // Check for unallowed syntax
+      const unallowedSyntax = checkUnallowedSyntax(
+        generate(path.node).code,
+        filepath
+      )
+      if (unallowedSyntax.err) {
+        return unallowedSyntax
+      }
+
+      const funcNode = functionExpression(
+        path.node.id,
+        path.node.params,
+        path.node.body,
+        path.node.generator,
+        path.node.async
+      )
+      const wrapper = createCatchUncaughtPage(
+        funcNode,
+        path.node.id.name,
+        filepath,
+        options
+      )
+
+      path.parentPath.replaceWith(
+        variableDeclaration("const", [
+          variableDeclarator(identifier(path.node.id.name), wrapper),
+        ])
+      )
+      // Add export default for the new const variable
+      path.parentPath.insertAfter(
+        exportDefaultDeclaration(identifier(path.node.id.name))
+      )
+      return Ok(undefined)
     }
 
     if (exportNames.includes(path.node.id.name)) {
@@ -185,31 +174,19 @@ export function transformFunctionDeclaration(
         path.node.generator,
         path.node.async
       )
-      const wrapper = createCatchUncaughtAction(
+      const wrapper = createCatchUncaughtPage(
         funcNode,
         path.node.id.name,
         filepath,
         options
       )
 
-      if (isExportDefaultDeclaration(path.parent)) {
-        path.parentPath.replaceWith(
-          variableDeclaration("const", [
-            variableDeclarator(identifier(path.node.id.name), wrapper),
-          ])
-        )
-        // Add export default for the new const variable
-        path.parentPath.insertAfter(
-          exportDefaultDeclaration(identifier(path.node.id.name))
-        )
-        return Ok(undefined)
-      }
-
       path.replaceWith(
         variableDeclaration("const", [
           variableDeclarator(identifier(path.node.id.name), wrapper),
         ])
       )
+      return Ok(undefined)
     }
   }
 

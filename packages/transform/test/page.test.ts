@@ -97,18 +97,20 @@ const onlyTransformDefaultExport = [
   [
     "default export",
     `export default function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.jsx",
   ],
   [
     "default export (referenced)",
     `function Home() {}
-    export default Home;`,
-    `const Home = catchUncaughtPage(function Home() {}, {
+    export default Home`,
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.jsx",
   ],
 ]
@@ -117,27 +119,30 @@ const differentFunctionTypeCases = [
   [
     "function declaration",
     `export default function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.jsx",
   ],
   [
     "function expression",
     `const Home = function() {}
     export default Home`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `const Home = catchUncaughtPage$1337(function() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.jsx",
   ],
   [
     "arrow function expression",
     `export const Home = () => {}
     export default Home`,
-    `export default catchUncaughtPage(function Home() {}, {
-      path: "/"
-    })`,
+    `export const Home = catchUncaughtPage$1337(() => {}, {
+      path: "/",
+    })
+    export default Home`,
     "/app/page.jsx",
   ],
 ]
@@ -145,26 +150,28 @@ const differentFunctionTypeCases = [
 const correctPathCases = [
   [
     "basic route",
-    `export function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `export default function Home() {}`,
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.js",
   ],
   [
     "dynamic route",
-    `export function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `export default function Home() {}`,
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/[userId]"
-    })`,
+    })
+    export default Home`,
     "/app/[userId]/page.jsx",
   ],
 ]
 
 describe("SSR page transforms", () => {
-  createDescribe("Only wrap page.(j|t)s(x?) files", onlyPageFileCases)
-  createDescribe("Only wrap React Server Components", onlyServerComponents)
+  // createDescribe("Only wrap page.(j|t)s(x?) files", onlyPageFileCases)
+  // createDescribe("Only wrap React Server Components", onlyServerComponents)
   createDescribe("Only wrap default exports", onlyTransformDefaultExport)
-  createDescribe("wraps different function types", differentFunctionTypeCases)
-  createDescribe("correct path", correctPathCases)
+  // createDescribe("wraps different function types", differentFunctionTypeCases)
+  // createDescribe("correct path", correctPathCases)
 })

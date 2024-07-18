@@ -9,7 +9,6 @@ import { transformRequest } from "./transforms/request"
 import { generate, traverse } from "./import-utils"
 
 import {
-  astHasServerDirective,
   transformFunctionDeclaration,
   transformFunctions,
 } from "./transforms/server-actions"
@@ -39,7 +38,10 @@ import {
   getCoreFunctionImportMap,
 } from "./transforms/auto-import"
 import { isNodesEquivalent } from "@babel/types"
-import { basename } from "path"
+import {
+  transformPageFunctionDeclaration,
+  transformPageFunctions,
+} from "./transforms/page"
 
 export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
   options = {}
@@ -69,6 +71,17 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
         return undefined
       })
       .filter(Boolean) as string[]
+    const defaultExport = exports
+      .map((e) => {
+        if (e.type !== "default") return undefined
+        if (e.defaultName) return e.defaultName
+        if (e.code.includes("function")) {
+          const nextOpenParenIndex = code.substring(e.end).indexOf("(")
+          return code.substring(e.end, e.end + nextOpenParenIndex).trim()
+        }
+        return undefined
+      })
+      .filter(Boolean) as string[]
 
     // Parse the code into an AST
     const ast = parseCode(code, id, options?.babel?.parserOptions).unwrap()
@@ -79,29 +92,38 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
     ).unwrap()
 
     // Make sure it's either a API Route or a Server Action
-    if (
+    // @todo: these checks should be inside the individual things no ?
+    /* if (
       basename(id) !== "route.ts" &&
       astHasServerDirective(ast) === false &&
       options.onlyServerActionsAndRoutes !== false
     ) {
       return { code }
-    }
+    } */
 
     // Traverse the AST and transform
     traverse(ast, {
       // Server Actions
       FunctionDeclaration(path) {
         transformFunctionDeclaration(path, exportNames, id, options).unwrap()
+        transformPageFunctionDeclaration(
+          path,
+          defaultExport,
+          id,
+          options
+        ).unwrap()
         transformRouteFunctionDeclaration(path, id, options).unwrap()
       },
 
       ArrowFunctionExpression(path) {
         transformFunctions(path, exportNames, id, options).unwrap()
+        transformPageFunctions(path, defaultExport, id, options).unwrap()
         transformRouteFunctions(path, id, options).unwrap()
       },
 
       FunctionExpression(path) {
         transformFunctions(path, exportNames, id, options).unwrap()
+        transformPageFunctions(path, defaultExport, id, options).unwrap()
         transformRouteFunctions(path, id, options).unwrap()
       },
       CallExpression(path) {
