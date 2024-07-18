@@ -37,51 +37,56 @@ const onlyPageFileCases = [
   [
     "page file (tsx)",
     `export default function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.tsx",
   ],
-
   [
     "page file (js)",
-    `export function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `export default function Home() {}`,
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.js",
   ],
   [
     "page file (jsx)",
-    `export function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `export default function Home() {}`,
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/"
-    })`,
+    })
+    export default Home`,
     "/app/page.jsx",
   ],
   // Dynamic routes
   [
     "page file (tsx)",
     `export default function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/[userId]"
-    })`,
+    })
+    export default Home`,
     "/app/[userId]/page.tsx",
   ],
   [
     "page file (js)",
-    `export function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `export default function Home() {}`,
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/[userId]"
-    })`,
+    })
+    export default Home`,
     "/app/[userId]/page.js",
   ],
   [
     "page file (jsx)",
-    `export function Home() {}`,
-    `export default catchUncaughtPage(function Home() {}, {
+    `export default function Home() {}`,
+    `const Home = catchUncaughtPage$1337(function Home() {}, {
       path: "/[userId]"
-    })`,
+    })
+    export default Home`,
     "/app/[userId]/page.jsx",
   ],
 ]
@@ -169,9 +174,9 @@ const correctPathCases = [
 ]
 
 describe("SSR page transforms", () => {
-  // createDescribe("Only wrap page.(j|t)s(x?) files", onlyPageFileCases)
-  // createDescribe("Only wrap React Server Components", onlyServerComponents)
+  createDescribe("Only wrap page.(j|t)s(x?) files", onlyPageFileCases)
+  createDescribe("Only wrap React Server Components", onlyServerComponents)
   createDescribe("Only wrap default exports", onlyTransformDefaultExport)
-  // createDescribe("wraps different function types", differentFunctionTypeCases)
-  // createDescribe("correct path", correctPathCases)
+  createDescribe("wraps different function types", differentFunctionTypeCases)
+  createDescribe("correct path", correctPathCases)
 })

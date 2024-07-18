@@ -3,7 +3,6 @@ import {
   isIdentifier,
   callExpression,
   identifier,
-  Program,
   stringLiteral,
   objectProperty,
   objectExpression,
@@ -25,6 +24,9 @@ import { filePathRelativeToPackageJsonDir } from "../path-utils"
 import { cwd } from "process"
 import { getCoreFunctionImportMap } from "./auto-import"
 import { checkUnallowedSyntax } from "./server-actions"
+import { basename } from "path"
+
+const PAGE_FILE_REGEXP = /page\.(t|j)sx?/
 
 function filePathToNextjsRoute(relativeFilePath: string) {
   const parts = relativeFilePath.split("/")
@@ -34,7 +36,7 @@ function filePathToNextjsRoute(relativeFilePath: string) {
     parts
       .map((part) => {
         if (part === "app") return
-        if (/page\.(t|j)sx?/.test(part)) return
+        if (PAGE_FILE_REGEXP.test(part)) return
         return part
       })
       .filter(Boolean)
@@ -76,7 +78,10 @@ export function transformPageFunctions(
 ) {
   if (
     options.next?.pages !== false &&
-    ["ArrowFunctionExpression", "FunctionExpression"].includes(path.node.type)
+    ["ArrowFunctionExpression", "FunctionExpression"].includes(
+      path.node.type
+    ) &&
+    PAGE_FILE_REGEXP.test(basename(filepath))
   ) {
     if (isVariableDeclarator(path.parent)) {
       const name = isIdentifier(path.parent.id)
@@ -114,7 +119,8 @@ export function transformPageFunctionDeclaration(
 ) {
   if (
     options.next?.pages !== false &&
-    path.node.type === "FunctionDeclaration"
+    path.node.type === "FunctionDeclaration" &&
+    PAGE_FILE_REGEXP.test(basename(filepath))
   ) {
     if (!path.node.id) {
       // @todo: replace with human-friendly error
