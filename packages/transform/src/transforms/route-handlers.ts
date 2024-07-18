@@ -23,6 +23,9 @@ import { generate } from "../import-utils"
 import { filePathRelativeToPackageJsonDir } from "../path-utils"
 import { cwd } from "process"
 import { getCoreFunctionImportMap } from "./auto-import"
+import { basename } from "path"
+
+const ROUTE_HANDLER_REGEXP = /route\.(t|j)sx?/
 
 const ROUTE_HANDLER_METHODS = [
   "GET",
@@ -97,7 +100,10 @@ export function transformRouteFunctions(
 ) {
   if (
     options.next?.routeHandlers !== false &&
-    ["ArrowFunctionExpression", "FunctionExpression"].includes(path.node.type)
+    ["ArrowFunctionExpression", "FunctionExpression"].includes(
+      path.node.type
+    ) &&
+    ROUTE_HANDLER_REGEXP.test(basename(filepath))
   ) {
     if (isVariableDeclarator(path.parent)) {
       const name = isIdentifier(path.parent.id)
@@ -135,7 +141,8 @@ export function transformRouteFunctionDeclaration(
 ) {
   if (
     options.next?.serverActions !== false &&
-    path.node.type === "FunctionDeclaration"
+    path.node.type === "FunctionDeclaration" &&
+    ROUTE_HANDLER_REGEXP.test(basename(filepath))
   ) {
     if (!path.node.id) {
       // @todo: replace with human-friendly error

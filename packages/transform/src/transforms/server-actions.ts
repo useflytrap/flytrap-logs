@@ -23,23 +23,10 @@ import {
 import type { NodePath } from "@babel/traverse"
 import { Err, Ok } from "ts-results"
 import { createError } from "@useflytrap/logs-shared"
-import { generate, traverse } from "../import-utils"
+import { generate } from "../import-utils"
 import { filePathRelativeToPackageJsonDir } from "../path-utils"
 import { cwd } from "process"
 import { getCoreFunctionImportMap } from "./auto-import"
-import { ParseResult } from "@babel/parser"
-
-export function astHasServerDirective(ast: ParseResult<File>) {
-  let hasServerDirective = false
-  traverse(ast, {
-    Directive(path) {
-      if (path.node.value.value === "use server") {
-        hasServerDirective = true
-      }
-    },
-  })
-  return hasServerDirective
-}
 
 function hasServerDirective(
   path: NodePath<
@@ -117,11 +104,12 @@ export function transformFunctions(
   filepath: string,
   options: LogsPluginOptions = {}
 ) {
-  if (hasServerDirective(path) === false) return Ok(undefined)
-
   if (
     options.next?.serverActions !== false &&
-    ["ArrowFunctionExpression", "FunctionExpression"].includes(path.node.type)
+    ["ArrowFunctionExpression", "FunctionExpression"].includes(
+      path.node.type
+    ) &&
+    hasServerDirective(path)
   ) {
     if (isVariableDeclarator(path.parent)) {
       const name = isIdentifier(path.parent.id)
@@ -157,11 +145,10 @@ export function transformFunctionDeclaration(
   filepath: string,
   options: LogsPluginOptions = {}
 ) {
-  if (hasServerDirective(path) === false) return Ok(undefined)
-
   if (
     options.next?.serverActions !== false &&
-    path.node.type === "FunctionDeclaration"
+    path.node.type === "FunctionDeclaration" &&
+    hasServerDirective(path)
   ) {
     if (!path.node.id) {
       // @todo: replace with human-friendly error

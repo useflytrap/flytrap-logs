@@ -91,16 +91,6 @@ export const unpluginFactory: UnpluginFactory<LogsPluginOptions | undefined> = (
       options?.babel?.parserOptions
     ).unwrap()
 
-    // Make sure it's either a API Route or a Server Action
-    // @todo: these checks should be inside the individual things no ?
-    /* if (
-      basename(id) !== "route.ts" &&
-      astHasServerDirective(ast) === false &&
-      options.onlyServerActionsAndRoutes !== false
-    ) {
-      return { code }
-    } */
-
     // Traverse the AST and transform
     traverse(ast, {
       // Server Actions
