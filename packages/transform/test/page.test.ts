@@ -173,10 +173,34 @@ const correctPathCases = [
   ],
 ]
 
+const addContextCases = [
+  [
+    "basic route",
+    `export default function Home(params) {}`,
+    `const Home = catchUncaughtPage$1337(function Home(params) {}, {
+      path: "/",
+      params: params
+    })
+    export default Home`,
+    "/app/page.js",
+  ],
+  [
+    "dynamic route",
+    `export default function Home(params) {}`,
+    `const Home = catchUncaughtPage$1337(function Home(params) {}, {
+      path: "/[userId]",
+      params: params
+    })
+    export default Home`,
+    "/app/[userId]/page.jsx",
+  ],
+]
+
 describe("SSR page transforms", () => {
   createDescribe("Only wrap page.(j|t)s(x?) files", onlyPageFileCases)
   createDescribe("Only wrap React Server Components", onlyServerComponents)
   createDescribe("Only wrap default exports", onlyTransformDefaultExport)
   createDescribe("wraps different function types", differentFunctionTypeCases)
   createDescribe("correct path", correctPathCases)
+  createDescribe("adds context", addContextCases)
 })

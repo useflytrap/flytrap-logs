@@ -16,6 +16,7 @@ import {
   isVariableDeclarator,
   exportDefaultDeclaration,
   File,
+  Identifier,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
 import { Err, Ok } from "ts-results"
@@ -60,6 +61,7 @@ function filePathToNextjsRoute(relativeFilePath: string) {
 export function createCatchUncaughtPage(
   funcNode: ArrowFunctionExpression | FunctionExpression,
   name: string,
+  params: Identifier | undefined,
   filepath: string,
   options: LogsPluginOptions
 ) {
@@ -79,13 +81,16 @@ export function createCatchUncaughtPage(
           )
         )
       ),
+      ...(params
+        ? [objectProperty(identifier("params"), identifier(params.name))]
+        : []),
     ]),
   ])
 }
 
 export function transformPageFunctions(
   path: NodePath<ArrowFunctionExpression | FunctionExpression>,
-  exportNames: string[],
+  defaultExportNames: string[],
   filepath: string,
   ast: ParseResult<File>,
   options: LogsPluginOptions = {}
@@ -96,55 +101,14 @@ export function transformPageFunctions(
       path.node.type
     ) &&
     PAGE_FILE_REGEXP.test(basename(filepath)) &&
-    astHasClientDirective(ast) === false
+    astHasClientDirective(ast) === false &&
+    isVariableDeclarator(path.parent)
   ) {
-    if (isVariableDeclarator(path.parent)) {
-      const name = isIdentifier(path.parent.id)
-        ? path.parent.id.name
-        : undefined
+    const name = isIdentifier(path.parent.id) ? path.parent.id.name : undefined
 
-      if (name && exportNames.includes(name)) {
-        // Check for unallowed syntax
-        const unallowedSyntax = checkUnallowedSyntax(
-          generate(path.node).code,
-          filepath
-        )
-        if (unallowedSyntax.err) {
-          return unallowedSyntax
-        }
+    const params = path.node.params[0] as Identifier | undefined
 
-        const wrapper = createCatchUncaughtPage(
-          path.node,
-          name,
-          filepath,
-          options
-        )
-        path.replaceWith(wrapper)
-      }
-    }
-  }
-  return Ok(undefined)
-}
-
-export function transformPageFunctionDeclaration(
-  path: NodePath<FunctionDeclaration>,
-  exportNames: string[],
-  filepath: string,
-  ast: ParseResult<File>,
-  options: LogsPluginOptions = {}
-) {
-  if (
-    options.next?.pages !== false &&
-    path.node.type === "FunctionDeclaration" &&
-    PAGE_FILE_REGEXP.test(basename(filepath)) &&
-    astHasClientDirective(ast) === false
-  ) {
-    if (!path.node.id) {
-      // @todo: replace with human-friendly error
-      throw new Error(`Path node ID is null.`)
-    }
-
-    if (isExportDefaultDeclaration(path.parent)) {
+    if (name && defaultExportNames.includes(name)) {
       // Check for unallowed syntax
       const unallowedSyntax = checkUnallowedSyntax(
         generate(path.node).code,
@@ -154,20 +118,66 @@ export function transformPageFunctionDeclaration(
         return unallowedSyntax
       }
 
-      const funcNode = functionExpression(
-        path.node.id,
-        path.node.params,
-        path.node.body,
-        path.node.generator,
-        path.node.async
-      )
       const wrapper = createCatchUncaughtPage(
-        funcNode,
-        path.node.id.name,
+        path.node,
+        name,
+        params,
         filepath,
         options
       )
+      path.replaceWith(wrapper)
+    }
+  }
+  return Ok(undefined)
+}
 
+export function transformPageFunctionDeclaration(
+  path: NodePath<FunctionDeclaration>,
+  defaultExportNames: string[],
+  filepath: string,
+  ast: ParseResult<File>,
+  options: LogsPluginOptions = {}
+) {
+  if (
+    options.next?.pages !== false &&
+    path.node.type === "FunctionDeclaration" &&
+    PAGE_FILE_REGEXP.test(basename(filepath)) &&
+    astHasClientDirective(ast) === false &&
+    (isExportDefaultDeclaration(path.parent) ||
+      defaultExportNames.includes(path.node.id?.name ?? ""))
+  ) {
+    if (!path.node.id) {
+      // @todo: replace with human-friendly error
+      throw new Error(`Path node ID is null.`)
+    }
+
+    // Check for unallowed syntax
+    const unallowedSyntax = checkUnallowedSyntax(
+      generate(path.node).code,
+      filepath
+    )
+    if (unallowedSyntax.err) {
+      return unallowedSyntax
+    }
+
+    const params = path.node.params[0] as Identifier | undefined
+
+    const funcNode = functionExpression(
+      path.node.id,
+      path.node.params,
+      path.node.body,
+      path.node.generator,
+      path.node.async
+    )
+    const wrapper = createCatchUncaughtPage(
+      funcNode,
+      path.node.id.name,
+      params,
+      filepath,
+      options
+    )
+
+    if (isExportDefaultDeclaration(path.parent)) {
       path.parentPath.replaceWith(
         variableDeclaration("const", [
           variableDeclarator(identifier(path.node.id.name), wrapper),
@@ -180,30 +190,7 @@ export function transformPageFunctionDeclaration(
       return Ok(undefined)
     }
 
-    if (exportNames.includes(path.node.id.name)) {
-      // Check for unallowed syntax
-      const unallowedSyntax = checkUnallowedSyntax(
-        generate(path.node).code,
-        filepath
-      )
-      if (unallowedSyntax.err) {
-        return unallowedSyntax
-      }
-
-      const funcNode = functionExpression(
-        path.node.id,
-        path.node.params,
-        path.node.body,
-        path.node.generator,
-        path.node.async
-      )
-      const wrapper = createCatchUncaughtPage(
-        funcNode,
-        path.node.id.name,
-        filepath,
-        options
-      )
-
+    if (defaultExportNames.includes(path.node.id.name)) {
       path.replaceWith(
         variableDeclaration("const", [
           variableDeclarator(identifier(path.node.id.name), wrapper),
