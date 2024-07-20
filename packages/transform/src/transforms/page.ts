@@ -19,7 +19,7 @@ import {
   Identifier,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
-import { Err, Ok } from "ts-results"
+import { Ok } from "ts-results"
 import { generate, traverse } from "../import-utils"
 import { filePathRelativeToPackageJsonDir } from "../path-utils"
 import { cwd } from "process"

@@ -18,7 +18,6 @@ import {
   ArrowFunctionExpression,
   isVariableDeclarator,
   exportDefaultDeclaration,
-  File,
 } from "@babel/types"
 import type { NodePath } from "@babel/traverse"
 import { Err, Ok } from "ts-results"
