@@ -34,6 +34,7 @@ export const baseLogSchema = z.object({
   res_headers: z.any(),
   http_status: z.number(),
   duration: z.number(),
+  params: z.any().optional(),
 
   error: z.any().optional(),
   user_id: z.string().optional(),
