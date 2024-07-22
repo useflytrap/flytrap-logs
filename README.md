@@ -24,7 +24,7 @@ Flytrap Logs is a full-stack error monitoring tool, that monitors your Server Ac
 ## Features
 
 - Monitors Server-rendered pages, API Routes, Server Actions & React components. [Learn more →](#-monitoring-server-rendered-pages-api-routes-server-actions--react-components)
-- Saves context from libraries you use (eg. Prisma, Drizzle, Supabase, Stripe, Auth.js) to make debugging easier. [Learn more →](#-automatic-context-from-your-tools)
+- Saves context from libraries you use (eg. Prisma, Drizzle, Supabase, Stripe, Auth.js) to make debugging easier. [Learn more →](#%EF%B8%8F-automatic-context-from-your-tools)
 - Type-safe structured canonical logging [Learn more →](#-type-safe-canonical-logging)
 - Encryption for log data [Learn more →](#-encryption-for-log-data)
 
