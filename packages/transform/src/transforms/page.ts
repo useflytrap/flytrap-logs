@@ -49,6 +49,7 @@ function filePathToNextjsRoute(relativeFilePath: string) {
     "/" +
     parts
       .map((part) => {
+        if (part.at(0) === "(" && part.at(-1) === ")") return
         if (part === "app") return
         if (PAGE_FILE_REGEXP.test(part)) return
         return part
