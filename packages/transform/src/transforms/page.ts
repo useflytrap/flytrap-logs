@@ -106,7 +106,9 @@ export function transformPageFunctions(
   ) {
     const name = isIdentifier(path.parent.id) ? path.parent.id.name : undefined
 
-    const params = path.node.params[0] as Identifier | undefined
+    const params = isIdentifier(path.node.params[0])
+      ? path.node.params[0]
+      : undefined
 
     if (name && defaultExportNames.includes(name)) {
       // Check for unallowed syntax
