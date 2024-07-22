@@ -126,7 +126,7 @@ export async function parseText(
 
 export function catchUncaughtRoute<
   RequestType extends Request,
-  T extends { params: Record<string, unknown> }
+  T extends { params: Record<string, unknown> },
 >(
   fn: (request: RequestType, context: T) => Promise<Response> | Response,
   addContext: AddContextFn<z.infer<typeof baseLogSchema>>,
@@ -229,6 +229,7 @@ export function catchUncaughtPage(
     const t0 = Date.now()
     if (options) addContext(options)
     try {
+      addContext({ type: "page" })
       addContext({
         req_headers: headersToRecord(headers()),
       })
