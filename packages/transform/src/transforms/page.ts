@@ -163,7 +163,9 @@ export function transformPageFunctionDeclaration(
       return unallowedSyntax
     }
 
-    const params = path.node.params[0] as Identifier | undefined
+    const params = isIdentifier(path.node.params[0])
+      ? path.node.params[0]
+      : undefined
 
     const funcNode = functionExpression(
       path.node.id,
